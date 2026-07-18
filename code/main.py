@@ -1,6 +1,7 @@
 import pygame
 from settings import *
 from pathlib import Path
+from player_grid import Player_Grid
 
 class Game:
     def __init__(self):
@@ -11,9 +12,21 @@ class Game:
 
         self.clock = pygame.time.Clock()
         self.running = True
+        self.font = pygame.font.Font(ROOT_DIR.joinpath("images", "Oxanium-Bold.ttf"))
 
         # GROUPS ---------------------------------------------------------------
         self.all_sprites = pygame.sprite.Group()
+        self.grid_sprites = pygame.sprite.Group()
+
+        # SURFACES -------------------------------------------------------------
+        self.grid_surface = pygame.Surface((300,300))
+
+        # PLAYER ---------------------------------------------------------------
+        self.player_grid = Player_Grid(
+            self.grid_sprites,
+            self.grid_surface,
+            self.font
+        )
 
     def run(self):
         while self.running:
@@ -28,7 +41,16 @@ class Game:
 
             # DRAW -------------------------------------------------------------
             self.display_surface.fill("purple")
+            self.display_surface.blit(self.grid_surface, (20,20))
+            self.grid_surface.fill("black")
+            pygame.draw.rect(
+                self.grid_surface,
+                "red",
+                self.player_grid.padded_rect,
+                3
+            )
             self.all_sprites.draw(self.display_surface)
+            self.grid_sprites.draw(self.grid_surface)
 
             pygame.display.update()
 
