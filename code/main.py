@@ -21,7 +21,7 @@ class Game:
         # SURFACES -------------------------------------------------------------
         self.grid_surface = pygame.Surface((300,300))
 
-        # PLAYER ---------------------------------------------------------------
+        # PLAYER GRID ----------------------------------------------------------
         self.player_grid = Player_Grid(
             self.grid_sprites,
             self.grid_surface,
@@ -37,18 +37,14 @@ class Game:
                     self.running = False
 
             # UPDATE -----------------------------------------------------------
-            # call update on sprite groups here
+            self.grid_sprites.update(self.grid_surface, dt)
 
             # DRAW -------------------------------------------------------------
             self.display_surface.fill("purple")
             self.display_surface.blit(self.grid_surface, (20,20))
-            self.grid_surface.fill("black")
-            pygame.draw.rect(
-                self.grid_surface,
-                "red",
-                self.player_grid.padded_rect,
-                3
-            )
+            self.saved_grid = self.grid_surface.copy()
+            self.grid_surface.blit(self.saved_grid)
+
             self.all_sprites.draw(self.display_surface)
             self.grid_sprites.draw(self.grid_surface)
 
