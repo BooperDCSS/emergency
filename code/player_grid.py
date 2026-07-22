@@ -14,7 +14,7 @@ class Player_Grid(pygame.sprite.Sprite):
         keys = pygame.key.get_just_pressed()
 
         if keys[pygame.K_LEFT]:
-            self.rect.centerx -= 35
+            self.rect.centerx -= 30
 
 
 class Map_Grid(pygame.sprite.Sprite):
@@ -24,7 +24,7 @@ class Map_Grid(pygame.sprite.Sprite):
         self.rect = self.image.get_frect(center = (player.rect.center))
 
     def update(self, surface, player, dt):
-        self.rect = self.image.get_frect(center = (player.rect.center))
+        self.rect = self.image.get_frect(center = (player.rect.center)).move(1,-1)
         pygame.draw.rect(
             surface,
             "red",

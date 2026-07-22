@@ -2,6 +2,7 @@ import pygame
 from settings import *
 from pathlib import Path
 from player_grid import Player_Grid, Map_Grid
+from text_input import InputBox
 
 class Game:
     def __init__(self):
@@ -12,7 +13,12 @@ class Game:
 
         self.clock = pygame.time.Clock()
         self.running = True
-        self.font = pygame.font.Font(ROOT_DIR.joinpath("images", "Oxanium-Bold.ttf"))
+        self.player_char = pygame.font.Font(
+            ROOT_DIR.joinpath("images", "Oxanium-Bold.ttf")
+        )
+        self.font = pygame.font.Font(
+            ROOT_DIR.joinpath("images", "HackNerdFontMono-Regular.ttf"), 25
+        )
 
         # GROUPS ---------------------------------------------------------------
         self.all_sprites = pygame.sprite.Group()
@@ -22,13 +28,17 @@ class Game:
         # SURFACES FOR GRIDWORK ------------------------------------------------
         self.grid_surface = pygame.Surface((300,300))
         self.grid_surface.set_colorkey("black")
+            # default color for a surface is black
         self.player_surface = pygame.Surface((300,300))
+
+        # TEXT ENTRY -----------------------------------------------
+        self.text_entry = InputBox(self.font, self.all_sprites)
 
         # PLAYER AND MAP GRIDS -------------------------------------------------
         self.player_grid = Player_Grid(
             self.player_sprites,
             self.player_surface,
-            self.font
+            self.player_char
         )
 
         self.map_grid = Map_Grid(
@@ -50,18 +60,19 @@ class Game:
             self.player_sprites.update(self.player_surface, dt)
             self.grid_sprites.update(self.grid_surface, self.player_grid, dt)
 
-            # DRAW -------------------------------------------------------------
-            self.display_surface.fill("purple")
-            self.display_surface.blit(self.player_surface, (20, 20))
+            # FILL (CLEAR), DRAW, BLIT -----------------------------------------
+            self.display_surface.fill("#4b3885")
             self.player_surface.fill("black")
-            self.display_surface.blit(self.grid_surface, (20, 20))
-
-            self.saved_grid = self.grid_surface.copy()
-            self.grid_surface.blit(self.saved_grid)
 
             self.player_sprites.draw(self.player_surface)
             self.all_sprites.draw(self.display_surface)
+
+            self.saved_grid = self.grid_surface.copy()
+            self.grid_surface.blit(self.saved_grid)
             self.grid_sprites.draw(self.saved_grid)
+
+            self.display_surface.blit(self.player_surface, (20, 20))
+            self.display_surface.blit(self.grid_surface, (20, 20))
 
             pygame.display.update()
 
