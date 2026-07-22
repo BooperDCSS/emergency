@@ -2,7 +2,7 @@ import pygame
 from settings import *
 
 class InputBox(pygame.sprite.Sprite):
-    def __init__(self, font, groups, text='> What do you do?'):
+    def __init__(self, font, groups, text='> Get, Look, Move'):
         super().__init__(groups)
         self.font = font
         self.inactive_color = "#00ffff"
@@ -25,19 +25,18 @@ class InputBox(pygame.sprite.Sprite):
             else:
                 self.active = False
 
-        if event.type == pygame.TEXTINPUT:
+        elif event.type == pygame.TEXTINPUT and self.active:
             self.text += event.text
 
-        elif event.type == pygame.KEYDOWN:
-            if self.active:
-                if event.key == pygame.K_RETURN:
-                    action_response = self.text
-                    self.text = '> What do you do now?'
-                    self.active = False
-                    self.color = self.inactive_color
-                    return action_response
-                if event.key == pygame.K_BACKSPACE:
-                    self.text = self.text[:-1]
+        elif event.type == pygame.KEYDOWN and self.active:
+            if event.key == pygame.K_RETURN:
+                action_response = self.text
+                self.text = '> Get, Look, Move'
+                self.active = False
+                self.color = self.inactive_color
+                return action_response
+            if event.key == pygame.K_BACKSPACE:
+                self.text = self.text[:-1]
 
         self.image = self.font.render(self.text, True, self.color)
 

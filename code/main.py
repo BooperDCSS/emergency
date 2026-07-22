@@ -3,6 +3,7 @@ from settings import *
 from pathlib import Path
 from player_grid import Player_Grid, Map_Grid
 from text_input import InputBox
+from terminal_output import Terminal_Output
 
 class Game:
     def __init__(self):
@@ -13,18 +14,21 @@ class Game:
 
         self.clock = pygame.time.Clock()
         self.running = True
+
         self.player_char = pygame.font.Font(
             ROOT_DIR.joinpath("images", "Oxanium-Bold.ttf")
         )
         self.font = pygame.font.Font(
             ROOT_DIR.joinpath("images", "HackNerdFontMono-Regular.ttf"), 25
         )
+
         pygame.key.start_text_input()
 
         # GROUPS ---------------------------------------------------------------
         self.all_sprites = pygame.sprite.Group()
         self.grid_sprites = pygame.sprite.Group()
         self.player_sprites = pygame.sprite.Group()
+        self.terminal_sprites = pygame.sprite.Group()
 
         # SURFACES FOR GRIDWORK ------------------------------------------------
         self.grid_surface = pygame.Surface((300,300))
@@ -32,9 +36,13 @@ class Game:
             # default color for a surface is black
         self.player_surface = pygame.Surface((300,300))
 
-        # TEXT ENTRY -----------------------------------------------
-        self.text_entry = InputBox(self.font, self.all_sprites)
-        self.text_background = pygame.Surface((920, 40))
+        # TEXT ENTRY -----------------------------------------------------------
+        self.input = InputBox(self.font, self.all_sprites)
+        self.input_background = pygame.Surface((920, 40))
+
+        # IN-GAME TERMINAL------------------------------------------------------
+        self.terminal_output = Terminal_Output(self.font, self.terminal_sprites)
+        self.terminal_background = pygame.Surface((920, 620))
 
         # PLAYER AND MAP GRIDS -------------------------------------------------
         self.player_grid = Player_Grid(
@@ -52,23 +60,28 @@ class Game:
     def run(self):
         while self.running:
 
-            dt = self.clock.tick(20) / 1000 # 0.017 seconds
+            dt = self.clock.tick(30) / 1000 # 0.017 seconds
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
-                action = self.text_entry.handle_event(event)
+                input_action = self.input.handle_event(event)
 
             # UPDATE -----------------------------------------------------------
             self.all_sprites.update(self.display_surface, dt)
-            self.player_sprites.update(self.player_surface, action, dt)
+            self.player_sprites.update(self.player_surface, input_action, dt)
             self.grid_sprites.update(self.grid_surface, self.player_grid, dt)
+            self.terminal_sprites.update(self.player_grid.return_response, dt)
+            input_action = ""
 
             # FILL (CLEAR), DRAW, BLIT -----------------------------------------
             self.display_surface.fill("#4b3885")
             self.player_surface.fill("black")
 
-            self.display_surface.blit(self.text_background, (340, 660))
+            self.display_surface.blit(self.terminal_background, (340, 20))
+            self.display_surface.blit(self.input_background, (340, 660))
+
             self.player_sprites.draw(self.player_surface)
+            self.terminal_sprites.draw(self.display_surface)
             self.all_sprites.draw(self.display_surface)
 
             self.saved_grid = self.grid_surface.copy()
@@ -77,6 +90,7 @@ class Game:
 
             self.display_surface.blit(self.player_surface, (20, 20))
             self.display_surface.blit(self.grid_surface, (20, 20))
+
 
             pygame.display.update()
 
