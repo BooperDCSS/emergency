@@ -19,6 +19,7 @@ class Game:
         self.font = pygame.font.Font(
             ROOT_DIR.joinpath("images", "HackNerdFontMono-Regular.ttf"), 25
         )
+        pygame.key.start_text_input()
 
         # GROUPS ---------------------------------------------------------------
         self.all_sprites = pygame.sprite.Group()
@@ -33,6 +34,7 @@ class Game:
 
         # TEXT ENTRY -----------------------------------------------
         self.text_entry = InputBox(self.font, self.all_sprites)
+        self.text_background = pygame.Surface((920, 40))
 
         # PLAYER AND MAP GRIDS -------------------------------------------------
         self.player_grid = Player_Grid(
@@ -50,20 +52,22 @@ class Game:
     def run(self):
         while self.running:
 
-            dt = self.clock.tick(60) / 1000 # 0.017 seconds
+            dt = self.clock.tick(20) / 1000 # 0.017 seconds
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
+                action = self.text_entry.handle_event(event)
 
             # UPDATE -----------------------------------------------------------
             self.all_sprites.update(self.display_surface, dt)
-            self.player_sprites.update(self.player_surface, dt)
+            self.player_sprites.update(self.player_surface, action, dt)
             self.grid_sprites.update(self.grid_surface, self.player_grid, dt)
 
             # FILL (CLEAR), DRAW, BLIT -----------------------------------------
             self.display_surface.fill("#4b3885")
             self.player_surface.fill("black")
 
+            self.display_surface.blit(self.text_background, (340, 660))
             self.player_sprites.draw(self.player_surface)
             self.all_sprites.draw(self.display_surface)
 

@@ -10,11 +10,16 @@ class Player_Grid(pygame.sprite.Sprite):
             center = ((150, 150))
         )
 
-    def update(self, surface, dt):
-        keys = pygame.key.get_just_pressed()
-
-        if keys[pygame.K_LEFT]:
+    def update(self, surface, action, dt):
+        action = str(action)
+        if "west" in action:
             self.rect.centerx -= 30
+        elif "east" in action:
+            self.rect.centerx += 30
+        elif "north" in action:
+            self.rect.centery -= 35
+        elif "south" in action:
+            self.rect.centery += 35
 
 
 class Map_Grid(pygame.sprite.Sprite):
