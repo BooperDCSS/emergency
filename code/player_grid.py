@@ -3,7 +3,7 @@ from pathlib import Path
 
 
 class Player_Grid(pygame.sprite.Sprite):
-    def __init__(self, groups, surface, font):
+    def __init__(self, groups, font):
         super().__init__(groups)
         self.image = font.render("@", True, "#a1b2c3")
         self.rect = self.image.get_frect(
@@ -30,16 +30,15 @@ class Player_Grid(pygame.sprite.Sprite):
 
 
     def update(self, surface, action, dt):
-        self.action = str(action)
+        self.action = str(action).strip()
         self.movement_check = self.action.lower().split()
         self.legal_move_verbs = ["go", "move", "walk", "travel"]
         self.directions = [
             "north", "south", "east", "west", "n", "s", "e", "w",
             "ne", "nw", "se", "sw"
         ]
-        self.return_response = ""
 
-        if not self.action or self.action == "None":
+        if not self.action or self.action == "None" or self.action == ">":
             pass
         elif self.movement_check[1] in self.legal_move_verbs:
             self.move_player_icon(self.movement_check[2])

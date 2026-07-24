@@ -5,19 +5,38 @@ class Terminal_Output(pygame.sprite.Sprite):
     def __init__(self, font, groups, text="Where am I?\n"):
         super().__init__(groups)
         self.font = font
-        self.text = text
-        self.color = "#ffffff"
+        self.text = [text]
+        self.text_count = 0
+        self.history = []
+        self.color = pygame.Color("#ffffff")
 
-        self.image = self.font.render(self.text, True, self.color)
-        self.rect = pygame.Rect(344, 24, 910, 610)
+        self.image = self.font.render(
+            self.text[0],
+            True,
+            self.color,
+            bgcolor="black",
+            wraplength=900
+        ).convert_alpha()
 
-    def update(self, new_text, dt):
-        if not new_text or new_text == "None":
-            return
+        self.rect = self.image.get_rect(topleft = (10, 10))
+        self.text_height = self.image.get_height()
+
+    def update(self, player_response, dt):
+        if not player_response or player_response == "None":
+            pass
         else:
-            self.text += new_text
-            if len(self.text) > 70:
-                print("it's off the screen!")
-            self.image = self.font.render(self.text, True, self.color)
+            self.text.append(player_response)
+            self.text_count += 1
+
+            self.image = self.font.render(
+                self.text[self.text_count],
+                True,
+                self.color,
+                bgcolor="black",
+                wraplength=900
+            ).convert_alpha()
+
+            self.text_height = self.image.get_height()
+            self.rect = self.image.get_rect(topleft = (10, self.text_height + (self.text_count * 30)))
 
 

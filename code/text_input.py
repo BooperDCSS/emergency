@@ -10,13 +10,16 @@ class InputBox(pygame.sprite.Sprite):
         self.color = self.inactive_color
         self.text = text
 
-        self.image = self.font.render(text, True, self.color)
+        self.image = self.font.render(text, True, self.color).convert_alpha()
         self.rect = pygame.Rect(344, 664, 920, 40)
 
         self.active = False
 
 
     def handle_event(self, event):
+        self.action_response = None
+        self.changed = False
+
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
                 self.active = True
@@ -24,20 +27,25 @@ class InputBox(pygame.sprite.Sprite):
                 self.color = self.active_color
             else:
                 self.active = False
+            self.changed = True
 
         elif event.type == pygame.TEXTINPUT and self.active:
             self.text += event.text
+            self.changed = True
 
         elif event.type == pygame.KEYDOWN and self.active:
             if event.key == pygame.K_RETURN:
-                action_response = self.text
+                self.action_response = self.text
                 self.text = '> Get, Look, Move'
                 self.active = False
                 self.color = self.inactive_color
-                return action_response
             if event.key == pygame.K_BACKSPACE:
                 self.text = self.text[:-1]
+            self.changed = True
 
-        self.image = self.font.render(self.text, True, self.color)
+        if self.changed:
+            self.image = self.font.render(self.text, True, self.color).convert_alpha()
+
+        return self.action_response, self.changed
 
 
