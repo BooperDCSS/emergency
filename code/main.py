@@ -36,14 +36,22 @@ class Game:
             # default color for a surface is black
         self.player_surface = pygame.Surface((300,300))
 
+        # IN-GAME TERMINAL------------------------------------------------------
+        self.terminal_background = pygame.Surface(
+            (920, 620),
+            pygame.SRCALPHA
+        ).convert_alpha()
+
+        self.terminal_output = Terminal_Output(
+            self.font,
+            self.terminal_sprites,
+            self.terminal_background,
+            self.display_surface
+        )
+
         # TEXT ENTRY -----------------------------------------------------------
         self.input = InputBox(self.font, self.all_sprites)
         self.input_background = pygame.Surface((920, 40))
-
-        # IN-GAME TERMINAL------------------------------------------------------
-        self.terminal_output = Terminal_Output(self.font, self.terminal_sprites)
-        self.terminal_background = pygame.Surface((920, 620), pygame.SRCALPHA).convert_alpha()
-        self.terminal_background.fill("black")
 
         # PLAYER AND MAP GRIDS -------------------------------------------------
         self.player_grid = Player_Grid(
@@ -63,6 +71,19 @@ class Game:
         self.dirty = True
 
     def run(self):
+
+        # this background never changes; fill it once and then leave it alone
+        self.display_surface.fill("#4b3885")
+
+        # "rewrite" once to get the terminal on screen
+        self.terminal_output.rewrite(
+            self.terminal_sprites,
+            self.terminal_background,
+            self.display_surface
+        )
+
+        pygame.display.flip()
+
         while self.running:
 
             dt = self.clock.tick(30) / 1000
@@ -72,8 +93,15 @@ class Game:
                     self.running = False
 
                 action_response, changed = self.input.handle_event(event)
+
                 if changed:
                     self.dirty = True
+                if str(action_response).lstrip("> ").lower() in ["history", "review"]:
+                    self.terminal_output.scroll = True
+                    self.terminal_output.scroll_terminal(self.terminal_sprites, self.terminal_background, self.display_surface)
+
+
+
 
 
             # UPDATE -----------------------------------------------------------
@@ -90,14 +118,11 @@ class Game:
 
             # FILL (CLEAR), DRAW, BLIT -----------------------------------------
             if self.dirty:
-                self.display_surface.fill("#4b3885")
                 self.player_surface.fill("black")
-
 
                 self.display_surface.blit(self.input_background, (340, 660))
                 self.player_sprites.draw(self.player_surface)
                 self.all_sprites.draw(self.display_surface)
-                self.terminal_sprites.draw(self.terminal_background)
 
                 self.saved_grid = self.grid_surface.copy()
                 self.grid_surface.blit(self.saved_grid)
@@ -106,11 +131,17 @@ class Game:
                 self.display_surface.blit(self.player_surface, (20, 20))
                 self.display_surface.blit(self.grid_surface, (20, 20))
 
-                self.display_surface.blit(self.terminal_background, (340, 20))
+            if self.dirty and self.terminal_output.updated:
+                self.terminal_output.rewrite(
+                    self.terminal_sprites,
+                    self.terminal_background,
+                    self.display_surface
+                )
 
+                self.terminal_output.updated = False
 
-                pygame.display.update()
-                self.dirty = False
+            pygame.display.update()
+            self.dirty = False
 
         pygame.quit()
 

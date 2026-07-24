@@ -30,7 +30,7 @@ class Player_Grid(pygame.sprite.Sprite):
 
 
     def update(self, surface, action, dt):
-        self.action = str(action).strip()
+        self.action = str(action).strip(" ")
         self.movement_check = self.action.lower().split()
         self.legal_move_verbs = ["go", "move", "walk", "travel"]
         self.directions = [
