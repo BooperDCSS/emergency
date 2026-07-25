@@ -29,8 +29,11 @@ class Player_Grid(pygame.sprite.Sprite):
                 self.return_response += f"Moving to the {direction} doesn't make sense in this game, friend.\n"
 
 
-    def update(self, surface, action, dt):
+    def update(self, action):
         self.action = str(action).strip(" ")
+        if not self.action or self.action == "None" or self.action == ">":
+            return
+
         self.movement_check = self.action.lower().split()
         self.legal_move_verbs = ["go", "move", "walk", "travel"]
         self.directions = [
@@ -38,14 +41,12 @@ class Player_Grid(pygame.sprite.Sprite):
             "ne", "nw", "se", "sw"
         ]
 
-        if not self.action or self.action == "None" or self.action == ">":
-            pass
-        elif self.movement_check[1] in self.legal_move_verbs:
+        if self.movement_check[1] in self.legal_move_verbs:
             self.move_player_icon(self.movement_check[2])
         elif self.movement_check[1] in self.directions:
             self.move_player_icon(self.movement_check[1])
         else:
-            pass
+            return
 
 
 
@@ -56,7 +57,7 @@ class Map_Grid(pygame.sprite.Sprite):
         self.image = pygame.Surface((25,30))
         self.rect = self.image.get_frect(center = (player.rect.center))
 
-    def update(self, surface, player, dt):
+    def update(self, surface, player):
         self.rect = self.image.get_frect(center = (player.rect.center)).move(1,-1)
         pygame.draw.rect(
             surface,

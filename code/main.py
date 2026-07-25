@@ -25,7 +25,7 @@ class Game:
         pygame.key.start_text_input()
 
         # GROUPS ---------------------------------------------------------------
-        self.all_sprites = pygame.sprite.Group()
+        self.input_sprites = pygame.sprite.Group()
         self.grid_sprites = pygame.sprite.Group()
         self.player_sprites = pygame.sprite.Group()
         self.terminal_sprites = pygame.sprite.Group()
@@ -37,7 +37,7 @@ class Game:
         self.player_surface = pygame.Surface((300,300))
 
         # IN-GAME TERMINAL------------------------------------------------------
-        self.terminal_background = pygame.Surface(
+        self.terminal_surface = pygame.Surface(
             (920, 620),
             pygame.SRCALPHA
         ).convert_alpha()
@@ -45,13 +45,13 @@ class Game:
         self.terminal_output = Terminal_Output(
             self.font,
             self.terminal_sprites,
-            self.terminal_background,
+            self.terminal_surface,
             self.display_surface
         )
 
         # TEXT ENTRY -----------------------------------------------------------
-        self.input = InputBox(self.font, self.all_sprites)
-        self.input_background = pygame.Surface((920, 40))
+        self.input_surface = pygame.Surface((920, 40))
+        self.input = InputBox(self.font, self.input_sprites, self.input_surface)
 
         # PLAYER AND MAP GRIDS -------------------------------------------------
         self.player_grid = Player_Grid(
@@ -76,11 +76,7 @@ class Game:
         self.display_surface.fill("#4b3885")
 
         # "rewrite" once to get the terminal on screen
-        self.terminal_output.rewrite(
-            self.terminal_sprites,
-            self.terminal_background,
-            self.display_surface
-        )
+        self.terminal_output.rewrite()
 
         pygame.display.flip()
 
@@ -96,48 +92,39 @@ class Game:
 
                 if changed:
                     self.dirty = True
+
                 if str(action_response).lstrip("> ").lower() in ["history", "review"]:
                     self.terminal_output.scroll = True
-                    self.terminal_output.scroll_terminal(self.terminal_sprites, self.terminal_background, self.display_surface)
-
-
-
-
+                    self.terminal_output.scroll_terminal(self.input)
 
             # UPDATE -----------------------------------------------------------
-            self.all_sprites.update(self.display_surface, dt)
-            self.player_sprites.update(self.player_surface, action_response, dt)
-            self.grid_sprites.update(self.grid_surface, self.player_grid, dt)
+            self.player_sprites.update(action_response)
+            self.grid_sprites.update(self.grid_surface, self.player_grid)
 
             if self.player_grid.return_response:
-                self.terminal_sprites.update(self.player_grid.return_response, dt)
+                self.terminal_sprites.update(self.player_grid.return_response)
                 self.player_grid.return_response = ""
                 self.dirty = True
 
             action_response = ""
 
-            # FILL (CLEAR), DRAW, BLIT -----------------------------------------
+            # FILL, DRAW, BLIT -------------------------------------------------
             if self.dirty:
                 self.player_surface.fill("black")
 
-                self.display_surface.blit(self.input_background, (340, 660))
+                self.input_sprites.draw(self.input_surface)
                 self.player_sprites.draw(self.player_surface)
-                self.all_sprites.draw(self.display_surface)
 
                 self.saved_grid = self.grid_surface.copy()
                 self.grid_surface.blit(self.saved_grid)
                 self.grid_sprites.draw(self.saved_grid)
 
+                self.display_surface.blit(self.input_surface, (340, 660))
                 self.display_surface.blit(self.player_surface, (20, 20))
                 self.display_surface.blit(self.grid_surface, (20, 20))
 
             if self.dirty and self.terminal_output.updated:
-                self.terminal_output.rewrite(
-                    self.terminal_sprites,
-                    self.terminal_background,
-                    self.display_surface
-                )
-
+                self.terminal_output.rewrite()
                 self.terminal_output.updated = False
 
             pygame.display.update()

@@ -7,9 +7,14 @@ class Terminal_Output(pygame.sprite.Sprite):
         self.font = font
         self.text = text
         self.color = pygame.Color("#ffffff")
+        self.scroll_color = pygame.Color("#faee44")
+
+        self.groups = groups
+        self.term_bg = term_bg
+        self.display_surface = display_surface
+
         self.updated = False
         self.scroll = False
-        self.scroll_color = pygame.Color("#faee44")
 
         self.image = self.font.render(
             self.text,
@@ -22,8 +27,8 @@ class Terminal_Output(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft = (10, 10))
         self.bottom_y = self.rect.bottom
 
-    def rewrite(self, groups, term_bg, display_surface):
-        term_bg.fill("black")
+    def rewrite(self):
+        self.term_bg.fill("black")
 
         self.image = self.font.render(
             self.text,
@@ -41,18 +46,29 @@ class Terminal_Output(pygame.sprite.Sprite):
             self.rect = self.image.get_rect(topleft = self.rect.topleft)
             self.bottom_y = self.rect.bottom
 
-        groups.draw(term_bg)
-        display_surface.blit(term_bg, (340, 20))
+        self.groups.draw(self.term_bg)
+        self.display_surface.blit(self.term_bg, (340, 20))
 
 
-    def render_again(self, groups, term_bg, display_surface):
-        groups.draw(term_bg)
-        display_surface.blit(term_bg, (340, 20))
+    def render_again(self):
+        self.groups.draw(self.term_bg)
+        self.display_surface.blit(self.term_bg, (340, 20))
         pygame.display.update()
 
 
-    def scroll_terminal(self, groups, term_bg, display_surface):
+    def scroll_terminal(self, input):
         old_topleft = self.rect.topleft
+
+        input.text = "Up/Down arrow to scroll. ESC to return."
+        input.image = input.font.render(
+            input.text,
+            True,
+            self.scroll_color
+        ).convert_alpha()
+
+        input.surface.fill("black")
+        input.groups.draw(input.surface)
+        self.display_surface.blit(input.surface, (340, 660))
 
         self.image = self.font.render(
             self.text,
@@ -62,20 +78,31 @@ class Terminal_Output(pygame.sprite.Sprite):
             wraplength=900
         ).convert_alpha()
 
-        self.render_again(groups, term_bg, display_surface)
+        self.render_again()
 
         while self.scroll:
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_UP:
-                    term_bg.fill("black")
+                    self.term_bg.fill("black")
                     self.rect.top += 30
-                    self.render_again(groups, term_bg, display_surface)
+                    self.render_again()
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_DOWN:
-                    term_bg.fill("black")
+                    self.term_bg.fill("black")
                     self.rect.top -= 30
-                    self.render_again(groups, term_bg, display_surface)
+                    self.render_again()
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                    term_bg.fill("black")
+                    self.term_bg.fill("black")
+
+                    input.text = '> Get, Look, Move'
+                    input.image = input.font.render(
+                        input.text,
+                        True,
+                        self.color
+                    ).convert_alpha()
+
+                    input.surface.fill("black")
+                    input.groups.draw(input.surface)
+                    self.display_surface.blit(input.surface, (340, 660))
 
                     self.image = self.font.render(
                         self.text,
@@ -85,11 +112,11 @@ class Terminal_Output(pygame.sprite.Sprite):
                         wraplength=900
                     ).convert_alpha()
                     self.rect = self.image.get_rect(topleft = old_topleft)
-                    self.render_again(groups, term_bg, display_surface)
+                    self.render_again()
 
                     self.scroll = False
 
-    def update(self, player_response, dt):
+    def update(self, player_response):
         if not player_response or player_response == "None":
             pass
         else:
