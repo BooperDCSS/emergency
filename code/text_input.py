@@ -11,6 +11,7 @@ class InputBox(pygame.sprite.Sprite):
 
         self.text = text
         self.surface = input_surface
+        self.surface_color = input_surface.fill("black")
         self.groups = groups
 
         self.image = self.font.render(self.text, True, self.color).convert_alpha()
@@ -25,8 +26,8 @@ class InputBox(pygame.sprite.Sprite):
         self.color = self.active_color
         self.changed = True
 
-    def handle_event(self, event):
-        self.action_response = None
+    def handle_input(self, event):
+        self.action_text = None
         self.changed = False
 
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -44,11 +45,11 @@ class InputBox(pygame.sprite.Sprite):
         elif event.type == pygame.KEYDOWN and self.active:
             if event.key == pygame.K_RETURN:
                 self.surface.fill("black")
-                self.action_response = self.text
+                self.action_text = self.text
                 self.text = '> Get, Look, Move'
                 self.active = False
                 self.color = self.inactive_color
-            if event.key == pygame.K_BACKSPACE:
+            elif event.key == pygame.K_BACKSPACE:
                 self.surface.fill("black")
                 self.text = self.text[:-1]
             self.changed = True
@@ -56,4 +57,4 @@ class InputBox(pygame.sprite.Sprite):
         if self.changed:
             self.image = self.font.render(self.text, True, self.color).convert_alpha()
 
-        return self.action_response, self.changed
+        return self.action_text, self.changed

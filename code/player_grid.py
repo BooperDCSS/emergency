@@ -9,47 +9,24 @@ class Player_Grid(pygame.sprite.Sprite):
         self.rect = self.image.get_frect(
             center = ((150, 150))
         )
-        self.return_response = ""
+        self.move_response = ""
 
     def move_player_icon(self, direction):
-        match direction.lower():
+        match direction:
             case "west" | "w":
                 self.rect.centerx -= 30
-                self.return_response += "You move west.\n"
+                self.move_response += "You move west.\n"
             case "east" | "e":
                 self.rect.centerx += 30
-                self.return_response += "You move east.\n"
+                self.move_response += "You move east.\n"
             case "north" | "n":
                 self.rect.centery -= 35
-                self.return_response += "You move north.\n"
+                self.move_response += "You move north.\n"
             case "south" | "s":
                 self.rect.centery += 35
-                self.return_response += "You move south.\n"
+                self.move_response += "You move south.\n"
             case _:
-                self.return_response += f"Moving to the {direction} doesn't make sense in this game, friend.\n"
-
-
-    def update(self, action):
-        self.action = str(action).strip(" ")
-        if not self.action or self.action == "None" or self.action == ">":
-            return
-
-        self.movement_check = self.action.lower().split()
-        self.legal_move_verbs = ["go", "move", "walk", "travel"]
-        self.directions = [
-            "north", "south", "east", "west", "n", "s", "e", "w",
-            "ne", "nw", "se", "sw"
-        ]
-
-        if self.movement_check[1] in self.legal_move_verbs:
-            self.move_player_icon(self.movement_check[2])
-        elif self.movement_check[1] in self.directions:
-            self.move_player_icon(self.movement_check[1])
-        else:
-            return
-
-
-
+                self.move_response += f"Moving to the {direction} doesn't make sense in this game, friend.\n"
 
 class Map_Grid(pygame.sprite.Sprite):
     def __init__ (self, groups, surface, player):

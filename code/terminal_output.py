@@ -116,11 +116,11 @@ class Terminal_Output(pygame.sprite.Sprite):
 
                     self.scroll = False
 
-    def update(self, player_response):
-        if not player_response or player_response == "None":
+    def update(self, move_response):
+        if not move_response or move_response == "None":
             pass
         else:
-            self.text += player_response
+            self.text += move_response
             self.updated = True
 
 

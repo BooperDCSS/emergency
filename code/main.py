@@ -50,7 +50,7 @@ class Game:
         )
 
         # TEXT ENTRY -----------------------------------------------------------
-        self.input_surface = pygame.Surface((920, 40))
+        self.input_surface = pygame.Surface((920, 40), pygame.SRCALPHA).convert_alpha()
         self.input = InputBox(self.font, self.input_sprites, self.input_surface)
 
         # PLAYER AND MAP GRIDS -------------------------------------------------
@@ -66,17 +66,65 @@ class Game:
         )
 
 
-        # TURN BY TURN UPDATE VARIABLE -----------------------------------------
+        # TURN BY TURN UPDATE VARIABLES ----------------------------------------
         # "dirty" meaning status has updated and we need to refresh
         self.dirty = True
+        self.action_text = ""
+
+    def update_grid_and_terminal(self):
+        self.grid_sprites.update(self.grid_surface, self.player_grid)
+
+        # the terminal update is going to need to take multiple potential actions
+        # or I will need one function for updating movements and another for
+        # handling events within each room
+
+        self.terminal_sprites.update(self.player_grid.move_response)
+        self.player_grid.move_response = ""
+        self.dirty = True
+
+    def parse_action(self):
+        self.action_text = str(self.action_text).strip("> ").lower()
+        action_words = self.action_text.split()
+
+        get_verbs = ("get", "grab")
+        look_verbs = ("inspect", "investigate", "look")
+        move_verbs = ("go", "move", "walk", "travel")
+        review_verbs = ("history", "review")
+        talk_verbs = ("talk")
+        directions = (
+            "north", "south", "east", "west", "n", "s", "e", "w",
+            "ne", "nw", "se", "sw"
+        )
+
+        if not action_words or action_words == ["none"]:
+            return
+
+        # my code is simple enough that this can probably be a match-case block
+        if len(action_words) >= 2:
+            if action_words[0] in get_verbs:
+                print("get verbs detected")
+            elif action_words[0] in look_verbs:
+                print("look verbs detected")
+            elif action_words[0] in move_verbs:
+                self.player_grid.move_player_icon(action_words[1])
+                self.update_grid_and_terminal()
+        elif action_words[0] in directions:
+            self.player_grid.move_player_icon(action_words[0])
+            self.update_grid_and_terminal()
+        elif action_words[0] in review_verbs:
+            self.terminal_output.scroll = True
+            self.terminal_output.scroll_terminal(self.input)
 
     def run(self):
 
         # this background never changes; fill it once and then leave it alone
         self.display_surface.fill("#4b3885")
 
-        # "rewrite" once to get the terminal on screen
+        # TODO: instantiate the room and place a character inside the first one
+
+        # "rewrite" once to get the terminal on screen; update grid for first room
         self.terminal_output.rewrite()
+        self.grid_sprites.update(self.grid_surface, self.player_grid)
 
         pygame.display.flip()
 
@@ -88,25 +136,19 @@ class Game:
                 if event.type == pygame.QUIT:
                     self.running = False
 
-                action_response, changed = self.input.handle_event(event)
+                self.action_text, changed = self.input.handle_input(event)
 
-                if changed:
-                    self.dirty = True
 
-                if str(action_response).lstrip("> ").lower() in ["history", "review"]:
-                    self.terminal_output.scroll = True
-                    self.terminal_output.scroll_terminal(self.input)
+            # this now performs most of my updates
+            # contains code that matches actions and directs traffic
+            self.parse_action()
 
-            # UPDATE -----------------------------------------------------------
-            self.player_sprites.update(action_response)
-            self.grid_sprites.update(self.grid_surface, self.player_grid)
-
-            if self.player_grid.return_response:
-                self.terminal_sprites.update(self.player_grid.return_response)
-                self.player_grid.return_response = ""
+            if changed:
                 self.dirty = True
 
-            action_response = ""
+            # RESET ACTION -----------------------------------------------------
+
+            self.action_text = ""
 
             # FILL, DRAW, BLIT -------------------------------------------------
             if self.dirty:
