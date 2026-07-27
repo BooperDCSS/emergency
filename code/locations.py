@@ -15,3 +15,10 @@ class Location:
 
 description_01 = "You are in a well-lit room. You notice your shadow is missing."
 location_01 = Location(1, "the beginning", description_01, occupied=True, visited=True)
+
+
+# locations are going to need a lot more stuff in them
+# - a description for the first visit
+# - descriptions for mundane return visits
+# - but they are just locations where I can grab information
+

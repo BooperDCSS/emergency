@@ -17,3 +17,13 @@ of fillng surfaces on every frame so that you can write over them afterward.
 - *Undertale*
 - Wanting to make a game since I was a boy.
 
+## Install/run
+
+This thing isn't even close to finished, but if you want to see the mess I have
+made in action, use [uv](https://docs.astral.sh/uv/).
+
+- Download and install uv.
+- Download this repository.
+- Navigte to the program's directory.
+- Run `uv sync`.
+- Run `uv run code/main.py`
