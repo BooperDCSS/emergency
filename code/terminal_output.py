@@ -13,7 +13,7 @@ class Terminal_Output(pygame.sprite.Sprite):
         self.term_bg = term_bg
         self.display_surface = display_surface
 
-        self.updated = False
+        self.updated = False # used in main to check for terminal rewrite
         self.scroll = False
 
         self.image = self.font.render(
@@ -42,7 +42,7 @@ class Terminal_Output(pygame.sprite.Sprite):
         self.bottom_y = self.rect.bottom
 
         if self.bottom_y >= 600:
-            self.rect.top -= 330
+            self.rect.top -= 490
             self.rect = self.image.get_rect(topleft = self.rect.topleft)
             self.bottom_y = self.rect.bottom
 
@@ -116,12 +116,20 @@ class Terminal_Output(pygame.sprite.Sprite):
 
                     self.scroll = False
 
-    def update(self, move_response, location_description):
-        if not move_response or move_response == "none":
-            move_response = ""
+    def top_location_change(self, grid_move_response, location_description):
+        if not grid_move_response or grid_move_response == "none":
+            return
         if not location_description or location_description == "none":
-            location_description = ""
-        self.text += "\n" + move_response + "\n" + location_description + "\n"
+            return
+
+        self.text += "\n" + grid_move_response + "\n" + location_description + "\n"
+        self.updated = True
+
+    def top_illegal_move(self, illegal_move_text):
+        if not illegal_move_text or illegal_move_text == "none":
+            return
+
+        self.text += "\n" + illegal_move_text + "\n"
         self.updated = True
 
 
