@@ -24,6 +24,6 @@ made in action, use [uv](https://docs.astral.sh/uv/).
 
 - Download and install uv.
 - Download this repository.
-- Navigte to the program's directory.
+- Navigate to the program's directory.
 - Run `uv sync`.
 - Run `uv run code/main.py`

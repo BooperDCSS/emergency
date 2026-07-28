@@ -1,9 +1,11 @@
 import pygame
 from settings import *
+from locations import *
 from pathlib import Path
 from player_grid import Player_Grid, Map_Grid
 from text_input import InputBox
 from terminal_output import Terminal_Output
+from actor import Actor
 
 class Game:
     def __init__(self):
@@ -24,21 +26,28 @@ class Game:
 
         pygame.key.start_text_input()
 
+
+        # THE ACTOR!! ----------------------------------------------------------
+        self.main_character = Actor(location_01)
+
+
         # GROUPS ---------------------------------------------------------------
         self.input_sprites = pygame.sprite.Group()
         self.grid_sprites = pygame.sprite.Group()
         self.player_sprites = pygame.sprite.Group()
         self.terminal_sprites = pygame.sprite.Group()
 
+
         # SURFACES FOR GRIDWORK ------------------------------------------------
-        self.grid_surface = pygame.Surface((300,300))
+        self.grid_surface = pygame.Surface(GRID_WH)
         self.grid_surface.set_colorkey("black")
             # default color for a surface is black
-        self.player_surface = pygame.Surface((300,300))
+        self.player_surface = pygame.Surface(GRID_WH)
+
 
         # IN-GAME TERMINAL------------------------------------------------------
         self.terminal_surface = pygame.Surface(
-            (920, 620),
+            TERMINAL_WH,
             pygame.SRCALPHA
         ).convert_alpha()
 
@@ -46,12 +55,15 @@ class Game:
             self.font,
             self.terminal_sprites,
             self.terminal_surface,
-            self.display_surface
+            self.display_surface,
+            self.main_character.location.description_new
         )
 
+
         # TEXT ENTRY -----------------------------------------------------------
-        self.input_surface = pygame.Surface((920, 40), pygame.SRCALPHA).convert_alpha()
+        self.input_surface = pygame.Surface(INPUT_WH, pygame.SRCALPHA).convert_alpha()
         self.input = InputBox(self.font, self.input_sprites, self.input_surface)
+
 
         # PLAYER AND MAP GRIDS -------------------------------------------------
         self.player_grid = Player_Grid(
@@ -71,6 +83,7 @@ class Game:
         self.dirty = True
         self.action_text = ""
 
+
     def update_grid_and_terminal(self):
         self.grid_sprites.update(self.grid_surface, self.player_grid)
 
@@ -82,43 +95,48 @@ class Game:
         self.player_grid.move_response = ""
         self.dirty = True
 
+
     def parse_action(self):
         self.action_text = str(self.action_text).strip("> ").lower()
         action_words = self.action_text.split()
 
-        get_verbs = ("get", "grab")
-        look_verbs = ("inspect", "investigate", "look")
-        move_verbs = ("go", "move", "walk", "travel")
-        review_verbs = ("history", "review")
-        talk_verbs = ("talk")
-        directions = (
+        get_verbs = {"get", "grab"}
+        look_verbs = {"inspect", "investigate", "look"}
+        move_verbs = {"go", "move", "walk", "travel"}
+        review_verbs = {"history", "review"}
+        talk_verbs = {"talk"}
+        directions = {
             "north", "south", "east", "west", "n", "s", "e", "w",
             "ne", "nw", "se", "sw"
-        )
+        }
 
         if not action_words or action_words == ["none"]:
             return
 
-        # my code is simple enough that this can probably be a match-case block
-        if len(action_words) >= 2:
-            if action_words[0] in get_verbs:
-                print("get verbs detected")
-            elif action_words[0] in look_verbs:
-                print("look verbs detected")
-            elif action_words[0] in move_verbs:
-                self.player_grid.move_player_icon(action_words[1])
+        match action_words:
+            case [verb, *rest] if verb in get_verbs:
+                print("Get verbs detected")
+            case ["pick", "up", *rest]:
+                print("You used the 'pick up' variation")
+            case [verb, *rest] if verb in look_verbs:
+                print("Look verbs detected")
+            case ["look", "at", *rest]:
+                print("You used the 'look at' variation")
+            case [verb, direction] if verb in move_verbs and direction in directions:
+                self.player_grid.move_player_icon(direction)
                 self.update_grid_and_terminal()
-        elif action_words[0] in directions:
-            self.player_grid.move_player_icon(action_words[0])
-            self.update_grid_and_terminal()
-        elif action_words[0] in review_verbs:
-            self.terminal_output.scroll = True
-            self.terminal_output.scroll_terminal(self.input)
+            case [direction] if direction in directions:
+                self.player_grid.move_player_icon(direction)
+                self.update_grid_and_terminal()
+            case ["history"] | ["review"]:
+                self.terminal_output.scroll = True
+                self.terminal_output.scroll_terminal(self.input)
+
 
     def run(self):
 
         # this background never changes; fill it once and then leave it alone
-        self.display_surface.fill("#4b3885")
+        self.display_surface.fill(DISPLAY_COLOR)
 
         # TODO: instantiate the room and place a character inside the first one
 

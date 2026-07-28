@@ -2,7 +2,7 @@ import pygame
 from settings import *
 
 class Terminal_Output(pygame.sprite.Sprite):
-    def __init__(self, font, groups, term_bg, display_surface, text="Where am I?\n"):
+    def __init__(self, font, groups, term_bg, display_surface, text):
         super().__init__(groups)
         self.font = font
         self.text = text
