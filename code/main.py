@@ -5,7 +5,7 @@ from pathlib import Path
 from player_grid import Player_Grid, Map_Grid
 from text_input import InputBox
 from terminal_output import Terminal_Output
-from actor import Actor
+from actor import Main_Character
 
 class Game:
     def __init__(self):
@@ -28,7 +28,7 @@ class Game:
 
 
         # THE ACTOR!! ----------------------------------------------------------
-        self.main_character = Actor(location_01)
+        self.main_character = Main_Character(location_01)
 
 
         # GROUPS ---------------------------------------------------------------
@@ -87,11 +87,13 @@ class Game:
     def update_grid_and_terminal(self):
         self.grid_sprites.update(self.grid_surface, self.player_grid)
 
-        # the terminal update is going to need to take multiple potential actions
-        # or I will need one function for updating movements and another for
-        # handling events within each room
+        if not self.main_character.location.visited:
+            location_desc = self.main_character.location.description_new
+            self.main_character.location.visited = True
+        else:
+            location_desc = self.main_character.location.description_return
 
-        self.terminal_sprites.update(self.player_grid.move_response)
+        self.terminal_sprites.update(self.player_grid.move_response, location_desc)
         self.player_grid.move_response = ""
         self.dirty = True
 
@@ -99,6 +101,7 @@ class Game:
     def parse_action(self):
         self.action_text = str(self.action_text).strip("> ").lower()
         action_words = self.action_text.split()
+        room_links = self.main_character.location.links
 
         get_verbs = {"get", "grab"}
         look_verbs = {"inspect", "investigate", "look"}
@@ -123,11 +126,15 @@ class Game:
             case ["look", "at", *rest]:
                 print("You used the 'look at' variation")
             case [verb, direction] if verb in move_verbs and direction in directions:
-                self.player_grid.move_player_icon(direction)
-                self.update_grid_and_terminal()
+                if direction in room_links.keys():
+                    self.player_grid.move_player_icon(direction)
+                    self.main_character.move_character(room_links[direction])
+                    self.update_grid_and_terminal()
             case [direction] if direction in directions:
-                self.player_grid.move_player_icon(direction)
-                self.update_grid_and_terminal()
+                if direction in room_links.keys():
+                    self.player_grid.move_player_icon(direction)
+                    self.main_character.move_character(room_links[direction])
+                    self.update_grid_and_terminal()
             case ["history"] | ["review"]:
                 self.terminal_output.scroll = True
                 self.terminal_output.scroll_terminal(self.input)

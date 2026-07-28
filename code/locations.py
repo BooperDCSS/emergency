@@ -7,9 +7,9 @@ class Location:
         self.description_new = ""
         self.description_return = ""
 
-        self.links = {} # direction/id pair?
-        self.interactions = {} # detail of interest / description pair
-        self.items = {} # name/description pair?
+        self.links = {} # direction/id pair
+        self.interactions = {} # DETAIL / description pair
+        self.items = {} # name/description pair
 
 location_01 = Location("the beginning", occupied=True, visited=True)
 location_02 = Location("the trail")
@@ -25,7 +25,13 @@ location_01.description_new = ("You awake in a well-lit room. As you rise to "
                                " This opening is wider than the other. You "
                                "think you can see a SNOWMAN inside.\n")
 
-location_01.links = {"w": location_02, "e": "placeholder2"}
+location_01.description_return = "You return to the room where you first awoke."
+
+location_01.links = {
+    "w": location_02,
+    "west": location_02,
+    "e": "placeholder2"
+}
 
 location_01.interactions = {
     "crack": "It's seven, maybe eight feet high, and just wide enough for you to walk through if you turn your body sideways.",
@@ -37,7 +43,10 @@ location_02.description_new = ("As you slip through the crack in the wall, all t
                                "then blinks out. It is pitch black for a moment. Before you can move backward, a blue "
                                "light flashes and stings your eyes. You find yourself beside a STREAM.")
 
-location_02.links = {"e": location_01}
+location_02.links = {
+    "e": location_01,
+    "east": location_01
+}
 
 location_02.interactions = {
     "stream": "It looks cold."
