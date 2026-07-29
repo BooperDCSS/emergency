@@ -125,11 +125,9 @@ class Terminal_Output(pygame.sprite.Sprite):
         self.text += "\n" + grid_move_response + "\n" + location_description + "\n"
         self.updated = True
 
-    def top_illegal_move(self, illegal_move_text):
-        if not illegal_move_text or illegal_move_text == "none":
+    def update_terminal_with(self, word):
+        if not word or word == "none":
             return
 
-        self.text += "\n" + illegal_move_text + "\n"
+        self.text += "\n" + word + "\n"
         self.updated = True
-
-

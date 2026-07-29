@@ -7,12 +7,11 @@ class Inventory(pygame.sprite.Sprite):
         self.font = font
         self.groups = groups
         self.color = pygame.Color("#ffffff")
+        self.main_character = main_character
 
-        self.inventory = main_character.inventory
-        self.text = "\n".join(self.inventory)
+        self.text = ""
         self.inv_surface = inv_surface
         self.display_surface = display_surface
-
 
         self.image = self.font.render(
             self.text,
@@ -22,3 +21,13 @@ class Inventory(pygame.sprite.Sprite):
         ).convert_alpha()
 
         self.rect = self.image.get_rect(topleft = (6, 10))
+
+    def populate(self):
+        self.text = "\n".join(self.main_character.inventory)
+        self.image = self.font.render(
+            self.text,
+            True,
+            self.color,
+            bgcolor="black",
+        ).convert_alpha()
+

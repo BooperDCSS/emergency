@@ -29,15 +29,20 @@ class Player_Grid(pygame.sprite.Sprite):
                 self.move_response += f"Moving to the {direction} doesn't make sense in this game, friend.\n"
 
 class Map_Grid(pygame.sprite.Sprite):
-    def __init__ (self, groups, surface, player):
+    def __init__ (self, groups, grid_surface, player_grid):
         super().__init__(groups)
-        self.image = pygame.Surface((25,30))
-        self.rect = self.image.get_frect(center = (player.rect.center))
 
-    def update(self, surface, player):
-        self.rect = self.image.get_frect(center = (player.rect.center)).move(1,-1)
+        self.grid_surface = grid_surface
+        self.player_grid = player_grid
+
+        self.image = pygame.Surface((25,30))
+        self.rect = self.image.get_frect(center = (self.player_grid.rect.center))
+
+
+    def update(self):
+        self.rect = self.image.get_frect(center = (self.player_grid.rect.center)).move(1,-1)
         pygame.draw.rect(
-            surface,
+            self.grid_surface,
             "red",
             self.rect,
             3

@@ -100,7 +100,7 @@ class Game:
 
 
     def top_location_change(self):
-        self.grid_sprites.update(self.grid_surface, self.player_grid)
+        self.grid_sprites.update()
 
         if not self.main_character.location.visited:
             location_desc = self.main_character.location.description_new
@@ -116,14 +116,19 @@ class Game:
     # YE BIG OLDE PARSER -------------------------------------------------------
     # this is the main traffic control after the player inputs a command
     # it relies on self.action_text, which is populated by self.input.handle_input(event)
+    # TODO: look into event bus structures for possible future refactor
 
     def parse_action(self):
         self.action_text = str(self.action_text).strip("> ").lower()
         action_words = self.action_text.split()
 
         room_links = self.main_character.location.links
+        room_interactions = self.main_character.location.interactions
+        room_items = self.main_character.location.items
+        your_inventory = self.main_character.inventory
 
         illegal_move_text = "There is no clear or safe path in that direction."
+        no_comprende = "This game isn't sophisticated enough to understand what you want to do."
 
         get_verbs = {"get", "grab"}
         look_verbs = {"inspect", "investigate", "look"}
@@ -131,8 +136,8 @@ class Game:
         review_verbs = {"history", "review"}
         talk_verbs = {"talk"}
         directions = {
-            "north", "south", "east", "west", "n", "s", "e", "w",
-            "ne", "nw", "se", "sw"
+            "north", "south", "east", "west", "northwest", "northeast",
+            "southwest", "southeast", "n", "s", "e", "w", "nw", "ne", "sw", "se"
         }
 
         if not action_words or action_words == ["none"]:
@@ -140,20 +145,52 @@ class Game:
 
         match action_words:
             case [verb, *rest] if verb in get_verbs:
-                print("Get verbs detected")
+                for detail in rest:
+                    if detail in room_items and not your_inventory:
+                        self.main_character.obtain(detail)
+                        self.terminal_output.update_terminal_with(f"You place the {detail} in your backpack. Wait, did I wake up with this backup?")
+                        self.inventory.populate()
+                        self.dirty = True
+                    elif detail in room_items and len(your_inventory) > 0:
+                        self.main_character.obtain(detail)
+                        self.terminal_output.update_terminal_with(f"You store the {detail} in your backpack.")
+                        self.inventory.populate()
+                        self.dirty = True
             case ["pick", "up", *rest]:
-                print("You used the 'pick up' variation")
+                for detail in rest:
+                    if detail in room_items and not your_inventory:
+                        self.main_character.obtain(detail)
+                        self.terminal_output.update_terminal_with(f"You place the {detail} in your backpack. Wait, did I wake up with this backup?")
+                        self.inventory.populate()
+                        self.dirty = True
+                    elif detail in room_items and len(your_inventory) > 0:
+                        self.main_character.obtain(detail)
+                        self.terminal_output.update_terminal_with(f"You store the {detail} in your backpack.")
+                        self.inventory.populate()
+                        self.dirty = True
             case [verb, *rest] if verb in look_verbs:
-                print("Look verbs detected")
+                for detail in rest:
+                    if detail in room_interactions:
+                        self.terminal_output.update_terminal_with(room_interactions[detail])
+                    elif detail in room_items:
+                        self.terminal_output.update_terminal_with(room_items[detail])
+                    elif detail in your_inventory:
+                        self.terminal_output.update_terminal_with(your_inventory[detail])
             case ["look", "at", *rest]:
-                print("You used the 'look at' variation")
+                for detail in rest:
+                    if detail in room_interactions:
+                        self.terminal_output.update_terminal_with(room_interactions[detail])
+                    elif detail in room_items:
+                        self.terminal_output.update_terminal_with(room_items[detail])
+                    elif detail in your_inventory:
+                        self.terminal_output.update_terminal_with(your_inventory[detail])
             case [verb, direction] if verb in move_verbs and direction in directions:
                 if direction in room_links: # .keys() not required, that is default behavior
                     self.player_grid.move_player_icon(direction)
                     self.main_character.move_character(room_links[direction])
                     self.top_location_change()
                 else:
-                    self.terminal_output.top_illegal_move(illegal_move_text)
+                    self.terminal_output.update_terminal_with(illegal_move_text)
                     self.dirty = True
             case [direction] if direction in directions:
                 if direction in room_links:
@@ -161,11 +198,14 @@ class Game:
                     self.main_character.move_character(room_links[direction])
                     self.top_location_change()
                 else:
-                    self.terminal_output.top_illegal_move(illegal_move_text)
+                    self.terminal_output.update_terminal_with(illegal_move_text)
                     self.dirty = True
             case ["history"] | ["review"]:
                 self.terminal_output.scroll = True
                 self.terminal_output.scroll_terminal(self.input)
+            case _:
+                self.terminal_output.update_terminal_with(no_comprende)
+
 
 
     def run(self):
@@ -179,7 +219,7 @@ class Game:
 
         # "rewrite" once to get the terminal on screen; update grid for first room
         self.terminal_output.rewrite()
-        self.grid_sprites.update(self.grid_surface, self.player_grid)
+        self.grid_sprites.update()
 
         pygame.display.flip()
 
