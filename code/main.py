@@ -162,7 +162,7 @@ class Game:
     # relies on self.action_text; populated by self.input.handle_input(event)
     # TODO: look into event bus structures for possible future refactor
 
-    def parse_action(self):
+    def parse_action(self, dt):
         self.action_text = str(self.action_text).strip("> ").lower()
         action_words = self.action_text.split()
 
@@ -196,7 +196,7 @@ class Game:
                 self.location_change(direction)
             case ["history"] | ["review"]:
                 self.terminal_output.scroll = True
-                self.terminal_output.scroll_terminal(self.input)
+                self.terminal_output.scroll_terminal(self.input, dt)
             case _:
                 self.terminal_output.update_terminal_with(no_comprende)
 
@@ -226,7 +226,7 @@ class Game:
 
                 self.action_text, changed = self.input.handle_input(event)
 
-            self.parse_action()
+            self.parse_action(dt)
 
             if changed:
                 self.dirty = True
@@ -256,6 +256,7 @@ class Game:
                 self.display_surface.blit(self.inventory_surface, (20, 340))
 
             if self.dirty and self.terminal_output.updated:
+                self.terminal_surface.fill("black")
                 self.terminal_output.rewrite()
                 self.terminal_output.updated = False
 
