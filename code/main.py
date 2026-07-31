@@ -27,7 +27,7 @@ class Game:
         )
 
         self.inv_font = pygame.font.Font(
-            ROOT_DIR.joinpath("images", "Oxanium-Bold.ttf"), 20
+            ROOT_DIR.joinpath("images", "HackNerdFontMono-Regular.ttf"), 20
         )
 
         pygame.key.start_text_input()
@@ -95,111 +95,105 @@ class Game:
         )
 
 
-    # ADDITIONAL GAME FUNCTIONS
-    # TERMINAL OUTPUT (TOP) FUNCTIONS ------------------------------------------
+    # FUNCTIONS FOR THE PARSER -------------------------------------------------
 
+    def location_change(self, direction):
+        room_links = self.main_character.location.links
+        illegal_move_text = "There is no clear or safe path in that direction."
 
-    def top_location_change(self):
-        self.grid_sprites.update()
+        if direction in room_links: # .keys() not required, that is default behavior
+            self.player_grid.move_player_icon(direction)
+            self.main_character.move_character(room_links[direction])
+            self.grid_sprites.update()
 
-        if not self.main_character.location.visited:
-            location_desc = self.main_character.location.description_new
-            self.main_character.location.visited = True
+            if not self.main_character.location.visited:
+                location_desc = self.main_character.location.description_new
+                self.main_character.location.visited = True
+            else:
+                location_desc = self.main_character.location.description_return
+
+            self.terminal_output.location_change(self.player_grid.move_response, location_desc)
+            self.player_grid.move_response = ""
         else:
-            location_desc = self.main_character.location.description_return
+            self.terminal_output.update_terminal_with(illegal_move_text)
 
-        self.terminal_output.top_location_change(self.player_grid.move_response, location_desc)
-        self.player_grid.move_response = ""
-        self.dirty = True
+
+    def get_item(self, words):
+        room_items = self.main_character.location.items
+        your_inventory = self.main_character.inventory
+
+        for word in words:
+            if word in room_items and not your_inventory:
+                self.main_character.obtain(word)
+                self.terminal_output.update_terminal_with(
+                    f"You place the {word} in your backpack. Wait, did I wake up with this backpack?"
+                )
+                self.inventory.rewrite()
+            elif word in room_items and len(your_inventory) > 0:
+                self.main_character.obtain(word)
+                self.terminal_output.update_terminal_with(
+                    f"You store the {word} in your backpack."
+                )
+                self.inventory.rewrite()
+
+
+    def look_at(self, words):
+        room_interactions = self.main_character.location.interactions
+        room_items = self.main_character.location.items
+        your_inventory = self.main_character.inventory
+
+        for word in words:
+            if word in room_interactions:
+                self.terminal_output.update_terminal_with(
+                    room_interactions[word]
+                )
+            elif word in room_items:
+                self.terminal_output.update_terminal_with(
+                    room_items[word]
+                )
+            elif word in your_inventory:
+                self.terminal_output.update_terminal_with(
+                    your_inventory[word]
+                )
 
 
     # YE BIG OLDE PARSER -------------------------------------------------------
-    # this is the main traffic control after the player inputs a command
-    # it relies on self.action_text, which is populated by self.input.handle_input(event)
+    # traffic control after the player inputs a command
+    # relies on self.action_text; populated by self.input.handle_input(event)
     # TODO: look into event bus structures for possible future refactor
 
     def parse_action(self):
         self.action_text = str(self.action_text).strip("> ").lower()
         action_words = self.action_text.split()
 
-        room_links = self.main_character.location.links
-        room_interactions = self.main_character.location.interactions
-        room_items = self.main_character.location.items
-        your_inventory = self.main_character.inventory
-
-        illegal_move_text = "There is no clear or safe path in that direction."
-        no_comprende = "This game isn't sophisticated enough to understand what you want to do."
+        if not action_words or action_words == ["none"]:
+            return
 
         get_verbs = {"get", "grab"}
         look_verbs = {"inspect", "investigate", "look"}
         move_verbs = {"go", "move", "walk", "travel"}
-        review_verbs = {"history", "review"}
-        talk_verbs = {"talk"}
         directions = {
             "north", "south", "east", "west", "northwest", "northeast",
             "southwest", "southeast", "n", "s", "e", "w", "nw", "ne", "sw", "se"
         }
+        review_verbs = {"history", "review"}
+        talk_verbs = {"talk"}
+        no_comprende = "This game isn't sophisticated enough to understand what you want to do."
 
-        if not action_words or action_words == ["none"]:
-            return
 
         match action_words:
-            case [verb, *rest] if verb in get_verbs:
-                for detail in rest:
-                    if detail in room_items and not your_inventory:
-                        self.main_character.obtain(detail)
-                        self.terminal_output.update_terminal_with(f"You place the {detail} in your backpack. Wait, did I wake up with this backup?")
-                        self.inventory.populate()
-                        self.dirty = True
-                    elif detail in room_items and len(your_inventory) > 0:
-                        self.main_character.obtain(detail)
-                        self.terminal_output.update_terminal_with(f"You store the {detail} in your backpack.")
-                        self.inventory.populate()
-                        self.dirty = True
-            case ["pick", "up", *rest]:
-                for detail in rest:
-                    if detail in room_items and not your_inventory:
-                        self.main_character.obtain(detail)
-                        self.terminal_output.update_terminal_with(f"You place the {detail} in your backpack. Wait, did I wake up with this backup?")
-                        self.inventory.populate()
-                        self.dirty = True
-                    elif detail in room_items and len(your_inventory) > 0:
-                        self.main_character.obtain(detail)
-                        self.terminal_output.update_terminal_with(f"You store the {detail} in your backpack.")
-                        self.inventory.populate()
-                        self.dirty = True
-            case [verb, *rest] if verb in look_verbs:
-                for detail in rest:
-                    if detail in room_interactions:
-                        self.terminal_output.update_terminal_with(room_interactions[detail])
-                    elif detail in room_items:
-                        self.terminal_output.update_terminal_with(room_items[detail])
-                    elif detail in your_inventory:
-                        self.terminal_output.update_terminal_with(your_inventory[detail])
-            case ["look", "at", *rest]:
-                for detail in rest:
-                    if detail in room_interactions:
-                        self.terminal_output.update_terminal_with(room_interactions[detail])
-                    elif detail in room_items:
-                        self.terminal_output.update_terminal_with(room_items[detail])
-                    elif detail in your_inventory:
-                        self.terminal_output.update_terminal_with(your_inventory[detail])
+            case [verb, *words] if verb in get_verbs:
+                self.get_item(words)
+            case ["pick", "up", *words]:
+                self.get_item(words)
+            case [verb, *words] if verb in look_verbs:
+                self.look_at(words)
+            case ["look", "at", *words]:
+                self.look_at(words)
             case [verb, direction] if verb in move_verbs and direction in directions:
-                if direction in room_links: # .keys() not required, that is default behavior
-                    self.player_grid.move_player_icon(direction)
-                    self.main_character.move_character(room_links[direction])
-                    self.top_location_change()
-                else:
-                    self.terminal_output.update_terminal_with(illegal_move_text)
-                    self.dirty = True
+                self.location_change(direction)
             case [direction] if direction in directions:
-                if direction in room_links:
-                    self.player_grid.move_player_icon(direction)
-                    self.main_character.move_character(room_links[direction])
-                    self.top_location_change()
-                else:
-                    self.terminal_output.update_terminal_with(illegal_move_text)
-                    self.dirty = True
+                self.location_change(direction)
             case ["history"] | ["review"]:
                 self.terminal_output.scroll = True
                 self.terminal_output.scroll_terminal(self.input)
@@ -207,7 +201,7 @@ class Game:
                 self.terminal_output.update_terminal_with(no_comprende)
 
 
-
+    # RUN: GAME LOOP USING EVERYTHING ABOVE ------------------------------------
     def run(self):
 
         # this background never changes; fill it once and then leave it alone
@@ -220,12 +214,11 @@ class Game:
         # "rewrite" once to get the terminal on screen; update grid for first room
         self.terminal_output.rewrite()
         self.grid_sprites.update()
-
         pygame.display.flip()
 
         while self.running:
 
-            dt = self.clock.tick(30) / 1000
+            dt = self.clock.tick(60) / 1000
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -233,8 +226,6 @@ class Game:
 
                 self.action_text, changed = self.input.handle_input(event)
 
-            # this now performs most of my updates
-            # contains code that matches actions and directs traffic
             self.parse_action()
 
             if changed:
@@ -245,11 +236,14 @@ class Game:
             self.action_text = ""
 
             # FILL, DRAW, BLIT -------------------------------------------------
+            self.input_surface.fill("black")
+            self.input_sprites.draw(self.input_surface)
+            self.display_surface.blit(self.input_surface, (340, 660))
+
             if self.dirty:
                 self.player_surface.fill("black")
                 self.inventory_surface.fill("black")
 
-                self.input_sprites.draw(self.input_surface)
                 self.player_sprites.draw(self.player_surface)
                 self.inventory_sprites.draw(self.inventory_surface)
 
@@ -257,7 +251,6 @@ class Game:
                 self.grid_surface.blit(self.saved_grid)
                 self.grid_sprites.draw(self.saved_grid)
 
-                self.display_surface.blit(self.input_surface, (340, 660))
                 self.display_surface.blit(self.player_surface, (20, 20))
                 self.display_surface.blit(self.grid_surface, (20, 20))
                 self.display_surface.blit(self.inventory_surface, (20, 340))

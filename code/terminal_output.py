@@ -28,6 +28,7 @@ class Terminal_Output(pygame.sprite.Sprite):
         self.bottom_y = self.rect.bottom
 
     def rewrite(self):
+        old_height = self.image.get_height()
         self.term_bg.fill("black")
 
         self.image = self.font.render(
@@ -38,11 +39,14 @@ class Terminal_Output(pygame.sprite.Sprite):
             wraplength=900
         ).convert_alpha()
 
+        new_height = self.image.get_height()
+        height_diff = new_height - old_height
+
         self.rect = self.image.get_rect(topleft = self.rect.topleft)
         self.bottom_y = self.rect.bottom
 
         if self.bottom_y >= 600:
-            self.rect.top -= 490
+            self.rect.top -= height_diff
             self.rect = self.image.get_rect(topleft = self.rect.topleft)
             self.bottom_y = self.rect.bottom
 
@@ -116,7 +120,7 @@ class Terminal_Output(pygame.sprite.Sprite):
 
                     self.scroll = False
 
-    def top_location_change(self, grid_move_response, location_description):
+    def location_change(self, grid_move_response, location_description):
         if not grid_move_response or grid_move_response == "none":
             return
         if not location_description or location_description == "none":

@@ -22,7 +22,7 @@ class Inventory(pygame.sprite.Sprite):
 
         self.rect = self.image.get_rect(topleft = (6, 10))
 
-    def populate(self):
+    def rewrite(self):
         self.text = "\n".join(self.main_character.inventory)
         self.image = self.font.render(
             self.text,
@@ -31,3 +31,4 @@ class Inventory(pygame.sprite.Sprite):
             bgcolor="black",
         ).convert_alpha()
 
+        self.rect = self.image.get_rect(topleft = self.rect.topleft)
