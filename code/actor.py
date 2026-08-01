@@ -1,7 +1,10 @@
+from locations import *
+
 class Main_Character:
     def __init__(self, location):
         self.location = location
         self.inventory = {}
+        self.dot = False
 
     def move_character(self, new_location):
         self.location.occupied = False
@@ -21,6 +24,8 @@ class Main_Character:
                 new_interaction_value = v
                 self.location.interactions[interaction_key] = new_interaction_value
 
+        if item == "dot":
+            self.dot = True
         self.location.items.pop(item)
 
 

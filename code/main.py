@@ -106,6 +106,7 @@ class Game:
             self.main_character.move_character(room_links[direction])
             self.grid_sprites.update()
 
+
             if not self.main_character.location.visited:
                 location_desc = self.main_character.location.description_new
                 self.main_character.location.visited = True
