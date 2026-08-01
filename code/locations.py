@@ -9,6 +9,7 @@ class Location:
         self.description_return = ""
 
         self.links = {} # direction/id pair for linked locations
+        self.links_alt = {}
         self.interactions = {} # DETAIL/description pair
         self.items = {} # name/description pair
         self.scene_tracker = {} # tracks interactions within a scene to modify descriptions
@@ -123,6 +124,12 @@ location_03.links = {"w": location_01,
                      "s": location_04,
                      "south": location_04
                      }
+
+location_03.links_alt = {"w": location_99,
+                         "west": location_99,
+                         "s": location_04,
+                         "south": location_04,
+                         }
 
 location_03.scene_tracker = {"brick": {"liquid": "You become uneasy the closer you get to the liquid. It is red and spread out in a thick and uneven oval. On one end of the oval is a BRICK. It is clean, but you wonder at its presence. On the other end, a child's shoe sits, filled to the top with the red liquid."},
                              "no brick": {"liquid": "You are certain this is a pool of blood. The little shoe sitting in it makes you feel ill."}

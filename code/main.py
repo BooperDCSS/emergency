@@ -97,15 +97,21 @@ class Game:
 
     # FUNCTIONS FOR THE PARSER -------------------------------------------------
 
+
     def location_change(self, direction):
         room_links = self.main_character.location.links
+        alt_links = self.main_character.location.links_alt
         illegal_move_text = "There is no clear or safe path in that direction."
+        location_name = self.main_character.location.name
 
         if direction in room_links: # .keys() not required, that is default behavior
             self.player_grid.move_player_icon(direction)
-            self.main_character.move_character(room_links[direction])
-            self.grid_sprites.update()
+            if location_name == "the fields" and self.main_character.dot:
+                self.main_character.move_character(alt_links[direction])
+            else:
+                self.main_character.move_character(room_links[direction])
 
+            self.grid_sprites.update()
 
             if not self.main_character.location.visited:
                 location_desc = self.main_character.location.description_new
@@ -179,6 +185,7 @@ class Game:
         }
         review_verbs = {"history", "review"}
         talk_verbs = {"talk"}
+        use_verbs = {"use", "open"}
         no_comprende = "This game isn't sophisticated enough to understand what you want to do."
         the_scene = self.main_character.location.description_observe
 
