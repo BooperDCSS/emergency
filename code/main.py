@@ -179,6 +179,7 @@ class Game:
         review_verbs = {"history", "review"}
         talk_verbs = {"talk"}
         no_comprende = "This game isn't sophisticated enough to understand what you want to do."
+        the_scene = self.main_character.location.description_observe
 
 
         match action_words:
@@ -197,6 +198,8 @@ class Game:
             case ["history"] | ["review"]:
                 self.terminal_output.scroll = True
                 self.terminal_output.scroll_terminal(self.input, dt)
+            case ["observe"]:
+                self.terminal_output.update_terminal_with(the_scene)
             case _:
                 self.terminal_output.update_terminal_with(no_comprende)
 
