@@ -99,10 +99,10 @@ class Game:
 
 
     def location_change(self, direction):
-        room_links = self.main_character.location.links
         alt_links = self.main_character.location.links_alt
         illegal_move_text = "There is no clear or safe path in that direction."
         location_name = self.main_character.location.name
+        room_links = self.main_character.location.links
 
         if direction in room_links: # .keys() not required, that is default behavior
             self.player_grid.move_player_icon(direction)
@@ -142,6 +142,21 @@ class Game:
                     f"You store the {word} in your backpack."
                 )
                 self.inventory.rewrite()
+
+    def use_item(self, verb, words):
+        your_inventory = self.main_character.inventory
+        object_to_use = " ".join(words)
+
+        if len(words) == 1:
+            self.terminal_output.update_terminal_with(f"{verb.capitalize()} the {object_to_use} with what?")
+
+        elif len(words) == 2:
+            for word in words:
+                if word in your_inventory and len(words) < 3:
+                    self.terminal_output.update_terminal_with(f"What do you want to {verb} the {word} with?")
+
+        # TODO: figure out how to parse a sentence like "use the screwdriver with the cannister"
+
 
 
     def look_at(self, words):
@@ -186,6 +201,7 @@ class Game:
         review_verbs = {"history", "review"}
         talk_verbs = {"talk"}
         use_verbs = {"use", "open"}
+        use_prepositions = {"with", "on"}
         no_comprende = "This game isn't sophisticated enough to understand what you want to do."
         the_scene = self.main_character.location.description_observe
 
@@ -203,6 +219,8 @@ class Game:
                 self.location_change(direction)
             case [direction] if direction in directions:
                 self.location_change(direction)
+            case [verb, *words] if verb in use_verbs:
+                self.use_item(verb, words)
             case ["history"] | ["review"]:
                 self.terminal_output.scroll = True
                 self.terminal_output.scroll_terminal(self.input, dt)
