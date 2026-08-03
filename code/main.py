@@ -123,7 +123,7 @@ class Game:
             self.terminal_output.location_change(self.player_grid.move_response, location_desc)
             self.player_grid.move_response = ""
         else:
-            self.terminal_output.update_terminal_with(self.illegal_move)
+            self.terminal_output.update_terminal_with(illegal_move)
 
 
     def get_item(self, words):
@@ -144,6 +144,32 @@ class Game:
                 )
                 self.inventory.rewrite()
 
+    def resolve_interaction(self, item1, item2):
+        pass
+        # TODO: this will lookup how items can interact and return the
+        # appropriate actions for the terminal, inventory, and player
+
+        hidden_items = {
+            "nursery rhyme": "Fuzzy Wuzzy was a bear... fuzzy wuzzy wasn't very fuzzy was he?"
+        }
+
+        environment_puzzles = {"nursery rhyme": "box"}
+
+        container_dict = {
+            "cannister": {"screwdriver": "nursery rhyme"},
+            "screwdriver": {"cannister": "nursery rhyme"}
+        }
+
+        # if item1 in container_dict and item2 in container_dict[item1]...
+        # then yield the value associated with item1 and add it to the
+        # player's inventory
+
+        # if item1 is in the environment_puzzles and item2 in the location
+        # then print special text to terminal for further action, so maybe
+        # the door opens and we can move north
+
+
+
     def use_item(self, action_words):
         room_interactions = self.main_character.location.interactions
         your_inventory = self.main_character.inventory
@@ -154,7 +180,7 @@ class Game:
         # dictionary that tracks what happens when the inventory object is used
         # in that fashion, like your scene tracker
 
-        use_prepositions = {"with", "on"}
+        use_prepositions = {"with", "on", "in"}
         common_articles = {"the", "a", "an"}
 
         # first possibility: a miskey, like "use the" or "use a"
@@ -189,7 +215,34 @@ class Game:
                 verb, item, prep, word = action_words
                 print(f"You can't {verb} the {item} {prep} the {word}.")
 
+        # fourth variation: "use the key door", which will work, or a miskey
+        # like "use the key on"
+        elif len(action_words) == 4 and action_words[1] in common_articles:
+            if action_words[2] in your_inventory and action_words[3] in your_inventory:
+                verb, article, item, dir_object = action_words
+                print(f"You {verb} {article} {item} on the {dir_object}.")
+            elif action_words[2] in your_inventory and action_words[3] in room_interactions:
+                verb, article, item, dir_object = action_words
+                print(f"You {verb} {article} {item} on the {dir_object} in the room.")
+            else:
+                verb, article, word1, word2 = action_words
+                print(f"You want to {use} {article} {word1} with the... {word2}? You decide that makes no sense.")
+
+        # fifth variation: something like "use the key on the door"
         elif len(action_words) > 4 and action_words[1] in common_articles:
+            if action_words[2] in your_inventory:
+                verb, article, item, *rest = action_words
+                for word in rest:
+                    if word in your_inventory:
+                        print(f"You {verb} {article} {item} on the {word}.")
+                    elif word in room_interactions:
+                        print(f"You {verb} {article} {item} on the {word} in the room.")
+            else:
+                verb, article, *rest = action_words
+                print(f"You want to {verb} {article} what...?! You think about it and change your mind.")
+
+        # sixth variation: "use key with the door"
+        elif len(action_words) > 4 and action_words[1] in your_inventory:
             pass
 
 

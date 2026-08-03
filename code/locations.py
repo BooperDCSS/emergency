@@ -20,7 +20,7 @@ location_02 = Location("the trail")
 location_03 = Location("the fields")
 location_04 = Location("the back yard")
 
-location_99 = Location("springtime in alaska")
+location_99 = Location("alaska")
 
 # LOCATION 1 -------------------------------------------------------------------
 location_01.description_new = (
@@ -263,7 +263,7 @@ location_99.interactions = {
     "wood": "In places, the grain of the wood paneling is shaped like the state of Illinois and large KNOT sits precisely where St. Louis, Missouri would be if Missouri were visible too.",
     "knot": "You run your finger over the knot and the dot in your backpack buzzes hard enough that you feel it in your lower back. You take it out and the music in the room stops. It sings, without accompaniment, 'Where the river is windin', big nuggets they're finding... Sam, you're a-lookin' at a lonely man!!' The music resumes when it stops.",
     "door": "It's a cartoonish door with a big circle for a knob, four panels, uneven edges, and a small note written in the middle: 'He Had No Hair!!'",
-    "box": "It's a wooden box with a message expertly carved on the side facing the door: Leave a reply. ",
+    "box": "It's a wooden box with a message expertly carved on the side facing the door: 'Take a guess.' ",
 }
 location_99.items = {}
 
