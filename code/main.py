@@ -99,15 +99,16 @@ class Game:
 
 
     def location_change(self, direction):
-        alt_links = self.main_character.location.links_alt
-        illegal_move_text = "There is no clear or safe path in that direction."
+
         location_name = self.main_character.location.name
         room_links = self.main_character.location.links
+        links_alt = self.main_character.location.links_alt
+        illegal_move = "There is no clear or safe path in that direction."
 
         if direction in room_links: # .keys() not required, that is default behavior
             self.player_grid.move_player_icon(direction)
             if location_name == "the fields" and self.main_character.dot:
-                self.main_character.move_character(alt_links[direction])
+                self.main_character.move_character(links_alt[direction])
             else:
                 self.main_character.move_character(room_links[direction])
 
@@ -122,7 +123,7 @@ class Game:
             self.terminal_output.location_change(self.player_grid.move_response, location_desc)
             self.player_grid.move_response = ""
         else:
-            self.terminal_output.update_terminal_with(illegal_move_text)
+            self.terminal_output.update_terminal_with(self.illegal_move)
 
 
     def get_item(self, words):
@@ -143,25 +144,58 @@ class Game:
                 )
                 self.inventory.rewrite()
 
-    def use_item(self, verb, words):
+    def use_item(self, action_words):
+        room_interactions = self.main_character.location.interactions
         your_inventory = self.main_character.inventory
-        object_to_use = " ".join(words)
 
-        if len(words) == 1:
-            self.terminal_output.update_terminal_with(f"{verb.capitalize()} the {object_to_use} with what?")
+        illegal_move = "There is no clear or safe path in that direction."
+        # TODO: be sure to place self.room_interactions with a new variable that
+        # tracks room objects you can use items on; this is probably another
+        # dictionary that tracks what happens when the inventory object is used
+        # in that fashion, like your scene tracker
 
-        elif len(words) == 2:
-            for word in words:
-                if word in your_inventory and len(words) < 3:
-                    self.terminal_output.update_terminal_with(f"What do you want to {verb} the {word} with?")
+        use_prepositions = {"with", "on"}
+        common_articles = {"the", "a", "an"}
 
-        # TODO: figure out how to parse a sentence like "use the screwdriver with the cannister"
+        # first possibility: a miskey, like "use the" or "use a"
+        if len(action_words) == 2 and action_words[1] in common_articles:
+            verb, _ = action_words
+            self.terminal_output.update_terminal_with(
+                f"Specify the thing you would like to {verb}."
+            )
 
+        # second possibility: "use key door," which will work, or a miskey
+        # like "use key with" or "open box using"
+        elif len(action_words) == 3 and action_words[1] in your_inventory:
+            verb, item, word = action_words
+            if word in your_inventory:
+                print(f"You {verb} the {item} with the {word}.")
+            elif word in room_interactions:
+                print(f"You {verb} the {item} with the {word} in the room.")
+            else:
+                self.terminal_output.update_terminal_with(
+                    f"Be more specific. How do you {verb} the {item}?"
+            )
+
+        # third variation: "use key with door"
+        elif len(action_words) == 4 and action_words[1] in your_inventory:
+            if action_words[2] in use_prepositions and action_words[3] in your_inventory:
+                verb, item, prep, dir_object = action_words
+                print(f"You {verb} the {item} {prep} the {dir_object}.")
+            elif action_words[2] in use_prepositions and action_words[3] in room_interactions:
+                verb, item, prep, dir_object = action_words
+                print(f"You {verb} the {item} {prep} the {dir_object} in the room.")
+            elif action_words[2] in use_prepositions:
+                verb, item, prep, word = action_words
+                print(f"You can't {verb} the {item} {prep} the {word}.")
+
+        elif len(action_words) > 4 and action_words[1] in common_articles:
+            pass
 
 
     def look_at(self, words):
-        room_interactions = self.main_character.location.interactions
         room_items = self.main_character.location.items
+        room_interactions = self.main_character.location.interactions
         your_inventory = self.main_character.inventory
 
         for word in words:
@@ -201,7 +235,6 @@ class Game:
         review_verbs = {"history", "review"}
         talk_verbs = {"talk"}
         use_verbs = {"use", "open"}
-        use_prepositions = {"with", "on"}
         no_comprende = "This game isn't sophisticated enough to understand what you want to do."
         the_scene = self.main_character.location.description_observe
 
@@ -220,7 +253,7 @@ class Game:
             case [direction] if direction in directions:
                 self.location_change(direction)
             case [verb, *words] if verb in use_verbs:
-                self.use_item(verb, words)
+                self.use_item(action_words)
             case ["history"] | ["review"]:
                 self.terminal_output.scroll = True
                 self.terminal_output.scroll_terminal(self.input, dt)
