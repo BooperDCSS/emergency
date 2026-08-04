@@ -44,7 +44,6 @@ class Game:
         self.terminal_sprites = pygame.sprite.Group()
         self.inventory_sprites = pygame.sprite.Group()
 
-
         # SURFACES FOR GRIDWORK ------------------------------------------------
         self.grid_surface = pygame.Surface(GRID_WH)
         self.grid_surface.set_colorkey("black")
@@ -94,9 +93,7 @@ class Game:
             self.main_character
         )
 
-
     # FUNCTIONS FOR THE PARSER -------------------------------------------------
-
 
     def location_change(self, direction):
 
@@ -130,120 +127,117 @@ class Game:
         room_items = self.main_character.location.items
         your_inventory = self.main_character.inventory
 
-        for word in words:
-            if word in room_items and not your_inventory:
-                self.main_character.obtain(word)
-                self.terminal_output.update_terminal_with(
-                    f"You place the {word} in your backpack. Wait, did I wake up with this backpack?"
-                )
-                self.inventory.rewrite()
-            elif word in room_items and len(your_inventory) > 0:
-                self.main_character.obtain(word)
-                self.terminal_output.update_terminal_with(
-                    f"You store the {word} in your backpack."
-                )
-                self.inventory.rewrite()
+        filter_words = {"the", "at"}
 
-    def resolve_interaction(self, item1, item2):
-        pass
-        # TODO: this will lookup how items can interact and return the
-        # appropriate actions for the terminal, inventory, and player
+        for i in range(len(words) - 1):
+            if words[i] in filter_words:
+                words[i] = ""
 
-        hidden_items = {
-            "nursery rhyme": "Fuzzy Wuzzy was a bear... fuzzy wuzzy wasn't very fuzzy was he?"
-        }
+        the_thing = " ".join(words).strip()
 
-        environment_puzzles = {"nursery rhyme": "box"}
+        self.main_character.obtain(the_thing)
+        if the_thing in room_items and not your_inventory:
+            self.terminal_output.update_terminal_with(
+                f"You place the {the_thing} in your backpack. Wait, did I wake up with this backpack?"
+            )
+        elif the_thing in room_items and len(your_inventory) > 0:
+            self.terminal_output.update_terminal_with(
+                f"You store the {the_thing} in your backpack."
+            )
 
-        container_dict = {
-            "cannister": {"screwdriver": "nursery rhyme"},
-            "screwdriver": {"cannister": "nursery rhyme"}
-        }
-
-        # if item1 in container_dict and item2 in container_dict[item1]...
-        # then yield the value associated with item1 and add it to the
-        # player's inventory
-
-        # if item1 is in the environment_puzzles and item2 in the location
-        # then print special text to terminal for further action, so maybe
-        # the door opens and we can move north
-
-
+        self.inventory.rewrite()
 
     def use_item(self, action_words):
-        room_interactions = self.main_character.location.interactions
-        your_inventory = self.main_character.inventory
-
-        illegal_move = "There is no clear or safe path in that direction."
         # TODO: be sure to place self.room_interactions with a new variable that
         # tracks room objects you can use items on; this is probably another
         # dictionary that tracks what happens when the inventory object is used
         # in that fashion, like your scene tracker
 
-        use_prepositions = {"with", "on", "in"}
+        room_interactions = self.main_character.location.interactions
+        your_inventory = self.main_character.inventory
+
+        illegal_move = "There is no clear or safe path in that direction."
+
+        common_prepositions = {"with", "on", "in", "at"}
         common_articles = {"the", "a", "an"}
 
-        # first possibility: a miskey, like "use the" or "use a"
-        if len(action_words) == 2 and action_words[1] in common_articles:
-            verb, _ = action_words
-            self.terminal_output.update_terminal_with(
-                f"Specify the thing you would like to {verb}."
-            )
+        match action_words:
+
+            # first possibility: a miskey, like "use the" or "use a"
+            case [verb, article] if article in common_articles:
+                self.terminal_output.update_terminal_with(
+                    f"Specify the thing you would like to {verb}."
+                    )
+
 
         # second possibility: "use key door," which will work, or a miskey
         # like "use key with" or "open box using"
-        elif len(action_words) == 3 and action_words[1] in your_inventory:
-            verb, item, word = action_words
-            if word in your_inventory:
-                print(f"You {verb} the {item} with the {word}.")
-            elif word in room_interactions:
-                print(f"You {verb} the {item} with the {word} in the room.")
-            else:
-                self.terminal_output.update_terminal_with(
-                    f"Be more specific. How do you {verb} the {item}?"
-            )
+            case [verb, item, word] if item in your_inventory:
+                if word in your_inventory:
+                    self.main_character.unwrap_items(item, word)
+                    self.inventory.rewrite()
+                elif word in room_interactions:
+                    print(f"You {verb} the {item} with the {word} in the room.")
+                else:
+                    self.terminal_output.update_terminal_with(
+                        f"{verb.capitalize()} the {item} how? On what? You need to think through that some more."
+                )
 
         # third variation: "use key with door"
-        elif len(action_words) == 4 and action_words[1] in your_inventory:
-            if action_words[2] in use_prepositions and action_words[3] in your_inventory:
-                verb, item, prep, dir_object = action_words
-                print(f"You {verb} the {item} {prep} the {dir_object}.")
-            elif action_words[2] in use_prepositions and action_words[3] in room_interactions:
-                verb, item, prep, dir_object = action_words
-                print(f"You {verb} the {item} {prep} the {dir_object} in the room.")
-            elif action_words[2] in use_prepositions:
-                verb, item, prep, word = action_words
-                print(f"You can't {verb} the {item} {prep} the {word}.")
+            case [verb, item, word1, word2] if item in your_inventory:
+                if word1 in common_prepositions and word2 in your_inventory:
+                    print(f"You {verb} the {item} {word1} the {word2}.")
+                elif word1 in common_prepositions and word2 in room_interactions:
+                    print(f"You {verb} the {item} {word1} the {word2} in the room.")
+                else:
+                    print(f"You can't {verb} the {item} {word1} the {word2}.")
 
         # fourth variation: "use the key door", which will work, or a miskey
         # like "use the key on"
-        elif len(action_words) == 4 and action_words[1] in common_articles:
-            if action_words[2] in your_inventory and action_words[3] in your_inventory:
-                verb, article, item, dir_object = action_words
-                print(f"You {verb} {article} {item} on the {dir_object}.")
-            elif action_words[2] in your_inventory and action_words[3] in room_interactions:
-                verb, article, item, dir_object = action_words
-                print(f"You {verb} {article} {item} on the {dir_object} in the room.")
-            else:
-                verb, article, word1, word2 = action_words
-                print(f"You want to {use} {article} {word1} with the... {word2}? You decide that makes no sense.")
+            case [verb, article, word1, word2] if article in common_articles:
+                if word1 in your_inventory and word2 in your_inventory:
+                    print(f"You {verb} {article} {word1} on the {word2}.")
+                elif word1 in your_inventory and word2 in room_interactions:
+                    print(f"You {verb} {article} {word1} on the {word2} in the room.")
+                else:
+                    print(f"You want to {verb} {article} {word1} with the... {word2}? You decide that makes no sense.")
 
         # fifth variation: something like "use the key on the door"
-        elif len(action_words) > 4 and action_words[1] in common_articles:
-            if action_words[2] in your_inventory:
-                verb, article, item, *rest = action_words
-                for word in rest:
-                    if word in your_inventory:
-                        print(f"You {verb} {article} {item} on the {word}.")
-                    elif word in room_interactions:
-                        print(f"You {verb} {article} {item} on the {word} in the room.")
-            else:
-                verb, article, *rest = action_words
-                print(f"You want to {verb} {article} what...?! You think about it and change your mind.")
+            case [verb, article, item, prep, *rest] if (article in common_articles and
+            item in your_inventory and
+            prep in common_prepositions
+            ):
+                for i in range(len(rest) - 1):
+                    if rest[i] in common_prepositions or rest[i] in common_articles:
+                        rest[i] = ""
+
+                thing = " ".join(rest).strip()
+
+                if thing in your_inventory:
+                        print(f"You {verb} {article} {item} {prep} the {thing}.")
+                elif thing in room_interactions:
+                    print(f"You {verb} {article} {item} {prep} the {thing} in the room.")
+                else:
+                    print(f"You want to {verb} what...? You decide to clear your mind before you do something foolish.")
 
         # sixth variation: "use key with the door"
-        elif len(action_words) > 4 and action_words[1] in your_inventory:
-            pass
+            case [verb, item, prep, article, *rest] if (item in your_inventory and
+            prep in common_prepositions and
+            article in common_articles
+            ):
+
+                for i in range(len(rest) - 1):
+                    if rest[i] in common_prepositions or rest[i] in common_articles:
+                        rest[i] = ""
+
+                thing = " ".join(rest).strip()
+
+                if thing in your_inventory:
+                    print(f"You {verb} the {item} {prep} {article} {thing}.")
+                elif thing in room_interactions:
+                    print(f"you {verb} the {item} {prep} {article} {thing} in the room.")
+                else:
+                    print(f"You know you want to {verb} the {item}, but you need to think more carefully about how, and with what.")
 
 
     def look_at(self, words):
@@ -251,19 +245,26 @@ class Game:
         room_interactions = self.main_character.location.interactions
         your_inventory = self.main_character.inventory
 
-        for word in words:
-            if word in room_interactions:
-                self.terminal_output.update_terminal_with(
-                    room_interactions[word]
-                )
-            elif word in room_items:
-                self.terminal_output.update_terminal_with(
-                    room_items[word]
-                )
-            elif word in your_inventory:
-                self.terminal_output.update_terminal_with(
-                    your_inventory[word]
-                )
+        filter_words = {"the", "at"}
+
+        for i in range(len(words) - 1):
+            if words[i] in filter_words:
+                words[i] = ""
+
+        the_thing = " ".join(words).strip()
+
+        if the_thing in room_interactions:
+            self.terminal_output.update_terminal_with(
+                room_interactions[the_thing]
+            )
+        elif the_thing in room_items:
+            self.terminal_output.update_terminal_with(
+                room_items[the_thing]
+            )
+        elif the_thing in your_inventory:
+            self.terminal_output.update_terminal_with(
+                your_inventory[the_thing]
+            )
 
 
     # YE BIG OLDE PARSER -------------------------------------------------------
@@ -298,8 +299,6 @@ class Game:
             case ["pick", "up", *words]:
                 self.get_item(words)
             case [verb, *words] if verb in look_verbs:
-                self.look_at(words)
-            case ["look", "at", *words]:
                 self.look_at(words)
             case [verb, direction] if verb in move_verbs and direction in directions:
                 self.location_change(direction)
