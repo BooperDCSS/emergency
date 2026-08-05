@@ -7,12 +7,15 @@ class Location:
         self.description_new = ""
         self.description_observe = ""
         self.description_return = ""
+        self.description_alt = ""
 
         self.links = {}  # direction/id pair for linked locations
         self.links_alt = {}
         self.interactions = {}  # DETAIL/description pair
+        self.interactions_alt = {}
         self.items = {}  # name/description pair
         self.scene_tracker = {}  # tracks interactions within a scene to modify descriptions
+        self.altered = False
 
 
 location_01 = Location("the beginning", occupied=True, visited=True)
@@ -21,6 +24,7 @@ location_03 = Location("the fields")
 location_04 = Location("the back yard")
 
 location_99 = Location("alaska")
+location_100 = Location("censor")
 
 # LOCATION 1 -------------------------------------------------------------------
 location_01.description_new = (
@@ -243,9 +247,9 @@ location_04.items = {
 location_99.description_new = (
     "You expect to return to the dark blue room where you first awoke, but after they flash, "
     "the first thing that your senses register is the sound of an old country song playing and "
-    "the uniform WOOD paneling all around you.\n\nThe song is familiar: 'As I walked in the door, the music was clear "
+    "the uniform WOOD paneling all around you.\n\nThe song is familiar: 'As I walked in the door, the music was clear"
     ", the purest voice I had heard in two years.'\n\nBoth cracks are gone, as are the 'W' and 'E' that "
-    "was carved above them. Instead, you see a DOOR outlined in white paint on the wall to your right. A small "
+    "were carved above them. Instead, you see a DOOR outlined in white paint on the wall to your right. A small "
     "BOX sits in front of it. You see no other exits."
 )
 
@@ -256,8 +260,14 @@ location_99.description_observe = (
     "hug, we did our dance on a kodiak rug...'"
 )
 
+location_99.description_alt = (
+    "The music stops all at once. The door outlined in white paint cracks open, its hinges and the manner of its "
+    "operation completely invisible to you. There is light coming from the room beyond it."
+
 location_99.links = {}
-location_99.links_alt = {}
+
+location_99.links_alt = {"n": location_100, "north": location_100}
+
 location_99.scene_tracker = {}
 location_99.interactions = {
     "wood": "In places, the grain of the wood paneling is shaped like the state of Illinois and large KNOT sits precisely where St. Louis, Missouri would be if Missouri were visible too.",

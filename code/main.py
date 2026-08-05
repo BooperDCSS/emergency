@@ -7,6 +7,7 @@ from text_input import InputBox
 from terminal_output import Terminal_Output
 from actor import Main_Character
 from inventory import Inventory
+from special_interactions import unwrap_items
 
 class Game:
     def __init__(self):
@@ -148,10 +149,13 @@ class Game:
         self.inventory.rewrite()
 
     def use_item(self, action_words):
-        # TODO: be sure to place self.room_interactions with a new variable that
-        # tracks room objects you can use items on; this is probably another
-        # dictionary that tracks what happens when the inventory object is used
-        # in that fashion, like your scene tracker
+        # TODO: be sure to replace self.room_interactions with a variable or
+        # set of variables that manages interactable places of interest within
+        # each room. You'll need to alter location.interactions, alter the links
+        # and maybe do something else to make this work... should all be handlded
+        # within this function...
+
+        # may need a check_altered function too, for location.altered flag
 
         room_interactions = self.main_character.location.interactions
         your_inventory = self.main_character.inventory
@@ -163,7 +167,7 @@ class Game:
 
         match action_words:
 
-            # first possibility: a miskey, like "use the" or "use a"
+        # first possibility: a miskey, like "use the" or "use a"
             case [verb, article] if article in common_articles:
                 self.terminal_output.update_terminal_with(
                     f"Specify the thing you would like to {verb}."
@@ -174,7 +178,7 @@ class Game:
         # like "use key with" or "open box using"
             case [verb, item, word] if item in your_inventory:
                 if word in your_inventory:
-                    self.main_character.unwrap_items(item, word)
+                    unwrap_items(item, word)
                     self.inventory.rewrite()
                 elif word in room_interactions:
                     print(f"You {verb} the {item} with the {word} in the room.")
