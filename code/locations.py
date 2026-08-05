@@ -263,6 +263,7 @@ location_99.description_observe = (
 location_99.description_alt = (
     "The music stops all at once. The door outlined in white paint cracks open, its hinges and the manner of its "
     "operation completely invisible to you. There is light coming from the room beyond it."
+    )
 
 location_99.links = {}
 

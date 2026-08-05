@@ -7,7 +7,7 @@ from text_input import InputBox
 from terminal_output import Terminal_Output
 from actor import Main_Character
 from inventory import Inventory
-from special_interactions import unwrap_items
+from special_interactions import unwrap_items, rearrange_room
 
 class Game:
     def __init__(self):
@@ -164,6 +164,13 @@ class Game:
 
         common_prepositions = {"with", "on", "in", "at"}
         common_articles = {"the", "a", "an"}
+        compound_items = {"yellow": "note"}
+
+        for item in compound_items:
+            for i in range(len(action_words) - 1):
+                if action_words[i] in compound_items:
+                    action_words.remove(compound_items[item])
+                    action_words[i] = item + " " + compound_items[item]
 
         match action_words:
 
@@ -178,10 +185,18 @@ class Game:
         # like "use key with" or "open box using"
             case [verb, item, word] if item in your_inventory:
                 if word in your_inventory:
-                    unwrap_items(item, word)
-                    self.inventory.rewrite()
+                    result = unwrap_items(item, word, self.main_character)
+                    if result:
+                        self.inventory.rewrite()
+                        self.terminal_output.update_terminal_with(result)
+                    else:
+                        self.terminal_output.update_terminal_with(f"You try to use the {item} with the {word}, but nothing happens.")
                 elif word in room_interactions:
-                    print(f"You {verb} the {item} with the {word} in the room.")
+                    result = rearrange_room(item, word)
+                    if result:
+                        self.terminal_output.update_terminal_with(result)
+                    else:
+                        self.terminal_output.update_terminal_with(f"You see no reason the {item} and the {word} would have anything to do with each other.")
                 else:
                     self.terminal_output.update_terminal_with(
                         f"{verb.capitalize()} the {item} how? On what? You need to think through that some more."
