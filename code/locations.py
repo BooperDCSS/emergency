@@ -5,9 +5,10 @@ class Location:
         self.visited = visited
 
         self.description_new = ""
-        self.description_observe = ""
-        self.description_return = ""
         self.description_alt = ""
+        self.description_observe = ""
+        self.description_observe_alt = ""
+        self.description_return = ""
 
         self.links = {}  # direction/id pair for linked locations
         self.links_alt = {}
@@ -24,6 +25,7 @@ location_04 = Location("the back yard")
 
 location_99 = Location("alaska")
 location_100 = Location("censor")
+location_101 = Location("end")
 
 # LOCATION 1 -------------------------------------------------------------------
 location_01.description_new = (
@@ -233,6 +235,7 @@ location_04.interactions = {
     "crack": "The crack you emerged from is like all the others you have seen, although this one appears to have cut a hole in the exposed side of your basement and there is a large 'N' carved in the brick beside it. The crack by your swingset is almost perfectly rectangular. You can't see INSIDE it like the others.",
     "light": "The light here is what feels most wrong, even worse than the image of the sun in the sky. It is pink and somehow cloudy, as if their is a haze everywhere just feet above the treetops. You have the sense that something will come floating out of it any moment.",
     "inside": location_04.scene_tracker["dot"]["inside"],
+    "surface": "It feels like glass on your hand, but it reflects almost no light. Looking closer, you think you can see patterns inside it, like a tunnel leading into the rock. Whatever it is, it's stuck inside the ground and won't budge in any direction."
 }
 
 location_04.items = {
@@ -264,6 +267,12 @@ location_99.description_alt = (
     "operation completely invisible to you. There is light coming from the room beyond it."
     )
 
+location_99.description_observe_alt = (
+"The music in the room has stopped. The WOOD panels seem to press in on you, but the outlined DOOR is now open. "
+"You try to look into the slot of the BOX where you dropped the note, but can see nothing inside."
+
+)
+
 location_99.links = {}
 
 location_99.links_alt = {"n": location_100, "north": location_100}
@@ -272,11 +281,61 @@ location_99.scene_tracker = {}
 location_99.interactions = {
     "wood": "In places, the grain of the wood paneling is shaped like the state of Illinois and large KNOT sits precisely where St. Louis, Missouri would be if Missouri were visible too.",
     "knot": "You run your finger over the knot and the dot in your backpack buzzes hard enough that you feel it in your lower back. You take it out and the music in the room stops. It sings, without accompaniment, 'Where the river is windin', big nuggets they're finding... Sam, you're a-lookin' at a lonely man!!' The music resumes when it stops.",
-    "door": "It's a cartoonish door with a big circle for a knob, four panels, uneven edges, and a small note written in the middle: 'He Had No Hair!!'",
-    "box": "It's a wooden box with a message expertly carved on the side facing the door: 'Take a guess.' ",
+    "door": "It's a cartoonish door with a big circle for a knob, four panels, uneven edges, and a small note written in the middle: 'He Had No Hair!!' You notice there is a half-erased 'N' on one of the panels.",
+    "box": "It's a wooden box with a slot in the top and a message expertly carved on its door-facing side: 'Take a guess.' ",
 }
 location_99.items = {}
 
+
+# LOCATION 100 -----------------------------------------------------------------
+
+location_100.description_new = (
+"The door feels flimsy as you pull it open, like cardboard. Before you step through, you can already see "
+"a child's school DESK near the middle of the room. On it are a stack of books and PAPERS, some of which "
+"have fallen to the floor and scattered around its base. A blackboard is fixed to the wall on one side, "
+"a crude diagram of a human head and BRAIN drawn on it in chalk. Scrawled in black and blue crayon on the opposite "
+"wall is a drawing of an elephant with large, wing-like ears and puffy cartoon clouds floating all around it. "
+"There is another DOOR on the other side of the school desk. The walls and ceiling of this room are a dull "
+"white. They make you think of your doctor's waiting room."
+)
+
+location_100.description_observe = (
+"There is a child's school DESK near the midle of the room, It is covered in stacks of books and PAPERS, some of"
+"which have fallen to the floor. A blackboard hangs on one wall. On it, a crude diagram of a human head and BRAIN "
+"is drawn in chalk. On the opposite wall, an elephant with large, wing-like ears is drawn in black and blue crayon. "
+"It's surrounded by puffy cartoon clouds. There is another DOOR on the other side of the school desk."
+)
+
+location_100.description_alt = (
+"You throw the brick at the brain on the blackboard. Instead of the board breaking or cracking, the brick explodes "
+"and the sound of shattering glass echoes through the room. You turn around to shield your eyes and face from the debris. "
+"As the force of the blast pushes by you, you are pleased to see the papers and books on the desk blow to the ground. The "
+"desk opens by itself, revealing the contents of the COMPARTMENT."
+)
+
+location_100.description_observe_alt = (
+"The school DESK now stands open, all of the books and PAPERS on it blown to the ground by the exploding brick. "
+"You feel tremendous relief to see that the COMPARTMENT is now accessible. A large crack is visible where the "
+"BRAIN diagram once was. "
+)
+
+location_100.description_return = ("")
+
+location_100.links = {}
+location_100.links_alt = {"n": location_101, "north": location_101}
+location_100.scene_tracker = {}
+location_100.interactions = {
+    "desk": "It's made of wood and metal. The top is sloped and rests over a COMPARTMENT where books and supplies can be stored, but it is covered in books and paper at least two feet high.",
+    "papers": "You pick up a handful of papers and scan them. On all of them are written the same few phrases in uneven pencil, over and over: 'don't tell anyone about this' and 'it was under the bed' and 'aliens gave me this shirt.' ",
+    "brain": "The brain is depicted inside the profile of a human head, which has a crack in the top of it. The word 'trauma' is written at the top of the board. There are ARROWS pointing at various parts of the brain and head, each one with a scribble beneath it.",
+    "arrows": "Some of the scribbles are legible. Nearly all of them say 'broken' but there is one that says 'break in case of emergency' and it points directly at the center of the BRAIN.",
+    "door": "It's a wooden door this time, just like the one to your bedroom, only it's painted blue. You jostle the door handle, push, pull, and shove, but the door doesn't move.",
+    "compartment": "You would love to know what's inside. But the books are heavy and no matter how many papers you move off the desk, you can't get to the bottom.",
+}
+
+location_100.items = {
+    "rocking horse": "Small motes float about the rocking horse, as if it's illuminated by a light source you can't see. It's made of dark wood and has yellow, woven hair. Two handles stick out from the side of its head."
+}
 
 # location_XX.description_new = ("")
 # location_XX.description_observe = ("")

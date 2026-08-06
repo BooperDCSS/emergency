@@ -1,5 +1,5 @@
 import pygame
-from settings import *
+
 
 class Terminal_Output(pygame.sprite.Sprite):
     def __init__(self, font, groups, term_bg, display_surface, text):
@@ -13,32 +13,24 @@ class Terminal_Output(pygame.sprite.Sprite):
         self.term_bg = term_bg
         self.display_surface = display_surface
 
-        self.updated = False # used in main to check for terminal rewrite
+        self.updated = False  # used in main to check for terminal rewrite
         self.scroll = False
 
         self.image = self.font.render(
-            self.text,
-            True,
-            self.color,
-            bgcolor="black",
-            wraplength=900
+            self.text, True, self.color, bgcolor="black", wraplength=900
         ).convert_alpha()
 
-        self.rect = self.image.get_frect(topleft = (10.0, 10.0))
+        self.rect = self.image.get_frect(topleft=(10.0, 10.0))
 
     def rewrite(self):
 
         self.term_bg.fill("black")
 
         self.image = self.font.render(
-            self.text,
-            True,
-            self.color,
-            bgcolor="black",
-            wraplength=900
+            self.text, True, self.color, bgcolor="black", wraplength=900
         ).convert_alpha()
 
-        self.rect = self.image.get_frect(topleft = self.rect.topleft)
+        self.rect = self.image.get_frect(topleft=self.rect.topleft)
 
         if self.rect.bottom >= 600:
             self.rect.bottom = 580
@@ -46,21 +38,17 @@ class Terminal_Output(pygame.sprite.Sprite):
         self.groups.draw(self.term_bg)
         self.display_surface.blit(self.term_bg, (340, 20))
 
-
     def render_again(self):
         self.groups.draw(self.term_bg)
         self.display_surface.blit(self.term_bg, (340, 20))
         pygame.display.update()
-
 
     def scroll_terminal(self, input, dt):
         old_topleft = self.rect.topleft
 
         input.text = "Up/Down arrow to scroll. ESC to return."
         input.image = input.font.render(
-            input.text,
-            True,
-            self.scroll_color
+            input.text, True, self.scroll_color
         ).convert_alpha()
 
         input.surface.fill("black")
@@ -68,17 +56,12 @@ class Terminal_Output(pygame.sprite.Sprite):
         self.display_surface.blit(input.surface, (340, 660))
 
         self.image = self.font.render(
-            self.text,
-            True,
-            self.scroll_color,
-            bgcolor="black",
-            wraplength=900
+            self.text, True, self.scroll_color, bgcolor="black", wraplength=900
         ).convert_alpha()
 
         self.render_again()
 
         while self.scroll:
-
             keys = pygame.key.get_pressed()
 
             if keys[pygame.K_UP]:
@@ -94,11 +77,9 @@ class Terminal_Output(pygame.sprite.Sprite):
                 if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                     self.term_bg.fill("black")
 
-                    input.text = '> Get, Look, Move'
+                    input.text = "> Get, Look, Move"
                     input.image = input.font.render(
-                        input.text,
-                        True,
-                        self.color
+                        input.text, True, self.color
                     ).convert_alpha()
 
                     input.surface.fill("black")
@@ -106,13 +87,9 @@ class Terminal_Output(pygame.sprite.Sprite):
                     self.display_surface.blit(input.surface, (340, 660))
 
                     self.image = self.font.render(
-                        self.text,
-                        True,
-                        self.color,
-                        bgcolor="black",
-                        wraplength=900
+                        self.text, True, self.color, bgcolor="black", wraplength=900
                     ).convert_alpha()
-                    self.rect = self.image.get_frect(topleft = old_topleft)
+                    self.rect = self.image.get_frect(topleft=old_topleft)
                     self.render_again()
 
                     self.scroll = False

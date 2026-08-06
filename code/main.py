@@ -161,7 +161,10 @@ class Game:
 
         common_prepositions = {"with", "on", "in", "at"}
         common_articles = {"the", "a", "an"}
-        compound_items = {"yellow": "note"}
+        compound_items = {
+            "yellow": "note",
+            "rocking": "horse"
+        }
 
         for item in compound_items:
             for i in range(len(action_words) - 1):
@@ -377,7 +380,7 @@ class Game:
         }
         review_terms = {"history", "review"}
         # talk_verbs = {"talk"}
-        use_verbs = {"use", "open"}
+        use_verbs = {"use", "open", "put", "throw"}
         no_comprende = (
             "This game isn't sophisticated enough to understand what you want to do."
         )
