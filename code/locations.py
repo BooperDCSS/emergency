@@ -15,7 +15,6 @@ class Location:
         self.interactions_alt = {}
         self.items = {}  # name/description pair
         self.scene_tracker = {}  # tracks interactions within a scene to modify descriptions
-        self.altered = False
 
 
 location_01 = Location("the beginning", occupied=True, visited=True)

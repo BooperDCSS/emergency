@@ -1,13 +1,24 @@
 import pygame
-from settings import *
-from locations import *
-from pathlib import Path
+
+from settings import (
+    WINDOW_WIDTH,
+    WINDOW_HEIGHT,
+    ROOT_DIR,
+    DISPLAY_COLOR,
+    TERMINAL_WH,
+    INPUT_WH,
+    GRID_WH,
+    INV_WH,
+)
+
+from locations import location_01
 from player_grid import Player_Grid, Map_Grid
 from text_input import InputBox
 from terminal_output import Terminal_Output
 from actor import Main_Character
 from inventory import Inventory
 from special_interactions import unwrap_items, rearrange_room
+
 
 class Game:
     def __init__(self):
@@ -33,10 +44,8 @@ class Game:
 
         pygame.key.start_text_input()
 
-
         # THE ACTOR!! ----------------------------------------------------------
         self.main_character = Main_Character(location_01)
-
 
         # GROUPS ---------------------------------------------------------------
         self.input_sprites = pygame.sprite.Group()
@@ -48,14 +57,12 @@ class Game:
         # SURFACES FOR GRIDWORK ------------------------------------------------
         self.grid_surface = pygame.Surface(GRID_WH)
         self.grid_surface.set_colorkey("black")
-            # default color for a surface is black
+        # default color for a surface is black
         self.player_surface = pygame.Surface(GRID_WH)
-
 
         # IN-GAME TERMINAL------------------------------------------------------
         self.terminal_surface = pygame.Surface(
-            TERMINAL_WH,
-            pygame.SRCALPHA
+            TERMINAL_WH, pygame.SRCALPHA
         ).convert_alpha()
 
         self.terminal_output = Terminal_Output(
@@ -63,26 +70,17 @@ class Game:
             self.terminal_sprites,
             self.terminal_surface,
             self.display_surface,
-            self.main_character.location.description_new
+            self.main_character.location.description_new,
         )
-
 
         # TEXT ENTRY -----------------------------------------------------------
         self.input_surface = pygame.Surface(INPUT_WH, pygame.SRCALPHA).convert_alpha()
         self.input = InputBox(self.font, self.input_sprites, self.input_surface)
 
-
         # PLAYER AND MAP GRIDS -------------------------------------------------
-        self.player_grid = Player_Grid(
-            self.player_sprites,
-            self.player_char
-        )
+        self.player_grid = Player_Grid(self.player_sprites, self.player_char)
 
-        self.map_grid = Map_Grid(
-            self.grid_sprites,
-            self.grid_surface,
-            self.player_grid
-        )
+        self.map_grid = Map_Grid(self.grid_sprites, self.grid_surface, self.player_grid)
 
         # INVENTORY SURFACE AND DATA -------------------------------------------
         self.inventory_surface = pygame.Surface(INV_WH, pygame.SRCALPHA).convert_alpha()
@@ -91,7 +89,7 @@ class Game:
             self.inventory_sprites,
             self.inventory_surface,
             self.display_surface,
-            self.main_character
+            self.main_character,
         )
 
     # FUNCTIONS FOR THE PARSER -------------------------------------------------
@@ -103,7 +101,7 @@ class Game:
         links_alt = self.main_character.location.links_alt
         illegal_move = "There is no clear or safe path in that direction."
 
-        if direction in room_links: # .keys() not required, that is default behavior
+        if direction in room_links:  # .keys() not required, that is default behavior
             self.player_grid.move_player_icon(direction)
             if location_name == "the fields" and self.main_character.dot:
                 self.main_character.move_character(links_alt[direction])
@@ -118,11 +116,12 @@ class Game:
             else:
                 location_desc = self.main_character.location.description_return
 
-            self.terminal_output.location_change(self.player_grid.move_response, location_desc)
+            self.terminal_output.location_change(
+                self.player_grid.move_response, location_desc
+            )
             self.player_grid.move_response = ""
         else:
             self.terminal_output.update_terminal_with(illegal_move)
-
 
     def get_item(self, words):
         room_items = self.main_character.location.items
@@ -136,31 +135,29 @@ class Game:
 
         the_thing = " ".join(words).strip()
 
-        self.main_character.obtain(the_thing)
         if the_thing in room_items and not your_inventory:
+            self.main_character.obtain(the_thing)
             self.terminal_output.update_terminal_with(
                 f"You place the {the_thing} in your backpack. Wait, did I wake up with this backpack?"
             )
         elif the_thing in room_items and len(your_inventory) > 0:
+            self.main_character.obtain(the_thing)
             self.terminal_output.update_terminal_with(
                 f"You store the {the_thing} in your backpack."
+            )
+        else:
+            self.terminal_output.update_terminal_with(
+            f"You can't get something that isn't there... can you?"
             )
 
         self.inventory.rewrite()
 
     def use_item(self, action_words):
-        # TODO: be sure to replace self.room_interactions with a variable or
-        # set of variables that manages interactable places of interest within
-        # each room. You'll need to alter location.interactions, alter the links
-        # and maybe do something else to make this work... should all be handlded
-        # within this function...
-
-        # may need a check_altered function too, for location.altered flag
 
         room_interactions = self.main_character.location.interactions
         your_inventory = self.main_character.inventory
 
-        illegal_move = "There is no clear or safe path in that direction."
+        # illegal_move = "There is no clear or safe path in that direction."
 
         common_prepositions = {"with", "on", "in", "at"}
         common_articles = {"the", "a", "an"}
@@ -173,16 +170,14 @@ class Game:
                     action_words[i] = item + " " + compound_items[item]
 
         match action_words:
-
-        # first possibility: a miskey, like "use the" or "use a"
+            # first possibility: a miskey, like "use the" or "use a"
             case [verb, article] if article in common_articles:
                 self.terminal_output.update_terminal_with(
                     f"Specify the thing you would like to {verb}."
-                    )
+                )
 
-
-        # second possibility: "use key door," which will work, or a miskey
-        # like "use key with" or "open box using"
+            # second possibility: "use key door," which will work, or a miskey
+            # like "use key with" or "open box using"
             case [verb, item, word] if item in your_inventory:
                 if word in your_inventory:
                     result = unwrap_items(item, word, self.main_character)
@@ -190,41 +185,78 @@ class Game:
                         self.inventory.rewrite()
                         self.terminal_output.update_terminal_with(result)
                     else:
-                        self.terminal_output.update_terminal_with(f"You try to use the {item} with the {word}, but nothing happens.")
+                        self.terminal_output.update_terminal_with(
+                            f"You try to use the {item} with the {word}, but nothing happens."
+                        )
                 elif word in room_interactions:
-                    result = rearrange_room(item, word)
+                    result = rearrange_room(item, word, self.main_character)
                     if result:
                         self.terminal_output.update_terminal_with(result)
+                        self.inventory.rewrite()
                     else:
-                        self.terminal_output.update_terminal_with(f"You see no reason the {item} and the {word} would have anything to do with each other.")
+                        self.terminal_output.update_terminal_with(
+                            f"You see no reason the {item} and the {word} would have anything to do with each other."
+                        )
                 else:
                     self.terminal_output.update_terminal_with(
                         f"{verb.capitalize()} the {item} how? On what? You need to think through that some more."
-                )
+                    )
 
-        # third variation: "use key with door"
+            # third variation: "use key with door"
             case [verb, item, word1, word2] if item in your_inventory:
                 if word1 in common_prepositions and word2 in your_inventory:
-                    print(f"You {verb} the {item} {word1} the {word2}.")
+                    result = unwrap_items(item, word2, self.main_character)
+                    if result:
+                        self.inventory.rewrite()
+                        self.terminal_output.update_terminal_with(result)
+                    else:
+                        self.terminal_output.update_terminal_with(
+                            f"You try to use the {item} with the {word2}, but nothing happens."
+                        )
                 elif word1 in common_prepositions and word2 in room_interactions:
-                    print(f"You {verb} the {item} {word1} the {word2} in the room.")
+                    result = rearrange_room(item, word2, self.main_character)
+                    if result:
+                        self.terminal_output.update_terminal_with(result)
+                        self.inventory.rewrite()
+                    else:
+                        self.terminal_output.update_terminal_with(
+                            f"You see no reason the {item} and the {word2} would have anything to do with each other."
+                        )
                 else:
-                    print(f"You can't {verb} the {item} {word1} the {word2}.")
+                    self.terminal_output.update_terminal_with(
+                    f"You can't {verb} the {item} {word1} the {word2}.")
 
-        # fourth variation: "use the key door", which will work, or a miskey
-        # like "use the key on"
+            # fourth variation: "use the key door", which will work, or a miskey
+            # like "use the key on"
             case [verb, article, word1, word2] if article in common_articles:
                 if word1 in your_inventory and word2 in your_inventory:
-                    print(f"You {verb} {article} {word1} on the {word2}.")
+                    result = unwrap_items(word1, word2, self.main_character)
+                    if result:
+                        self.inventory.rewrite()
+                        self.terminal_output.update_terminal_with(result)
+                    else:
+                        self.terminal_output.update_terminal_with(
+                            f"You try to use the {word1} with the {word2}, but nothing happens."
+                        )
                 elif word1 in your_inventory and word2 in room_interactions:
-                    print(f"You {verb} {article} {word1} on the {word2} in the room.")
+                    result = rearrange_room(word1, word2, self.main_character)
+                    if result:
+                        self.terminal_output.update_terminal_with(result)
+                        self.inventory.rewrite()
+                    else:
+                        self.terminal_output.update_terminal_with(
+                            f"You see no reason the {word1} and the {word2} would have anything to do with each other."
+                        )
                 else:
-                    print(f"You want to {verb} {article} {word1} with the... {word2}? You decide that makes no sense.")
+                    self.terminal_output.update_terminal_with(
+                        f"You want to {verb} {article} {word1} with the... {word2}? You decide that makes no sense."
+                    )
 
-        # fifth variation: something like "use the key on the door"
-            case [verb, article, item, prep, *rest] if (article in common_articles and
-            item in your_inventory and
-            prep in common_prepositions
+            # fifth variation: something like "use the key on the door"
+            case [verb, article, item, prep, *rest] if (
+                article in common_articles
+                and item in your_inventory
+                and prep in common_prepositions
             ):
                 for i in range(len(rest) - 1):
                     if rest[i] in common_prepositions or rest[i] in common_articles:
@@ -233,18 +265,34 @@ class Game:
                 thing = " ".join(rest).strip()
 
                 if thing in your_inventory:
-                        print(f"You {verb} {article} {item} {prep} the {thing}.")
+                    result = unwrap_items(item, thing, self.main_character)
+                    if result:
+                        self.inventory.rewrite()
+                        self.terminal_output.update_terminal_with(result)
+                    else:
+                        self.terminal_output.update_terminal_with(
+                            f"You try to use the {item} with the {thing}, but nothing happens."
+                        )
                 elif thing in room_interactions:
-                    print(f"You {verb} {article} {item} {prep} the {thing} in the room.")
+                    result = rearrange_room(item, thing, self.main_character)
+                    if result:
+                        self.terminal_output.update_terminal_with(result)
+                        self.inventory.rewrite()
+                    else:
+                        self.terminal_output.update_terminal_with(
+                            f"You see no reason the {item} and the {thing} would have anything to do with each other."
+                        )
                 else:
-                    print(f"You want to {verb} what...? You decide to clear your mind before you do something foolish.")
+                    self.terminal_output.update_terminal_with(
+                        f"You want to {verb} what...? You decide to clear your mind before you do something foolish."
+                    )
 
-        # sixth variation: "use key with the door"
-            case [verb, item, prep, article, *rest] if (item in your_inventory and
-            prep in common_prepositions and
-            article in common_articles
+            # sixth variation: "use key with the door"
+            case [verb, item, prep, article, *rest] if (
+                item in your_inventory
+                and prep in common_prepositions
+                and article in common_articles
             ):
-
                 for i in range(len(rest) - 1):
                     if rest[i] in common_prepositions or rest[i] in common_articles:
                         rest[i] = ""
@@ -252,12 +300,27 @@ class Game:
                 thing = " ".join(rest).strip()
 
                 if thing in your_inventory:
-                    print(f"You {verb} the {item} {prep} {article} {thing}.")
+                    result = unwrap_items(item, thing, self.main_character)
+                    if result:
+                        self.inventory.rewrite()
+                        self.terminal_output.update_terminal_with(result)
+                    else:
+                        self.terminal_output.update_terminal_with(
+                            f"You try to use the {item} with the {thing}, but nothing happens."
+                        )
                 elif thing in room_interactions:
-                    print(f"you {verb} the {item} {prep} {article} {thing} in the room.")
+                    result = rearrange_room(item, thing, self.main_character)
+                    if result:
+                        self.terminal_output.update_terminal_with(result)
+                        self.inventory.rewrite()
+                    else:
+                        self.terminal_output.update_terminal_with(
+                            f"You see no reason the {item} and the {thing} would have anything to do with each other."
+                        )
                 else:
-                    print(f"You know you want to {verb} the {item}, but you need to think more carefully about how, and with what.")
-
+                    self.terminal_output.update_terminal_with(
+                        f"You know you want to {verb} the {item}, but you need to think more carefully about how, and with what."
+                    )
 
     def look_at(self, words):
         room_items = self.main_character.location.items
@@ -273,18 +336,11 @@ class Game:
         the_thing = " ".join(words).strip()
 
         if the_thing in room_interactions:
-            self.terminal_output.update_terminal_with(
-                room_interactions[the_thing]
-            )
+            self.terminal_output.update_terminal_with(room_interactions[the_thing])
         elif the_thing in room_items:
-            self.terminal_output.update_terminal_with(
-                room_items[the_thing]
-            )
+            self.terminal_output.update_terminal_with(room_items[the_thing])
         elif the_thing in your_inventory:
-            self.terminal_output.update_terminal_with(
-                your_inventory[the_thing]
-            )
-
+            self.terminal_output.update_terminal_with(your_inventory[the_thing])
 
     # YE BIG OLDE PARSER -------------------------------------------------------
     # traffic control after the player inputs a command
@@ -299,18 +355,33 @@ class Game:
             return
 
         get_verbs = {"get", "grab"}
-        look_verbs = {"inspect", "investigate", "look"}
+        look_verbs = {"inspect", "investigate", "look", "read"}
         move_verbs = {"go", "move", "walk", "travel"}
         directions = {
-            "north", "south", "east", "west", "northwest", "northeast",
-            "southwest", "southeast", "n", "s", "e", "w", "nw", "ne", "sw", "se"
+            "north",
+            "south",
+            "east",
+            "west",
+            "northwest",
+            "northeast",
+            "southwest",
+            "southeast",
+            "n",
+            "s",
+            "e",
+            "w",
+            "nw",
+            "ne",
+            "sw",
+            "se",
         }
-        review_verbs = {"history", "review"}
-        talk_verbs = {"talk"}
+        review_terms = {"history", "review"}
+        # talk_verbs = {"talk"}
         use_verbs = {"use", "open"}
-        no_comprende = "This game isn't sophisticated enough to understand what you want to do."
+        no_comprende = (
+            "This game isn't sophisticated enough to understand what you want to do."
+        )
         the_scene = self.main_character.location.description_observe
-
 
         match action_words:
             case [verb, *words] if verb in get_verbs:
@@ -325,14 +396,13 @@ class Game:
                 self.location_change(direction)
             case [verb, *words] if verb in use_verbs:
                 self.use_item(action_words)
-            case ["history"] | ["review"]:
+            case [word] if word in review_terms:
                 self.terminal_output.scroll = True
                 self.terminal_output.scroll_terminal(self.input, dt)
             case ["observe"]:
                 self.terminal_output.update_terminal_with(the_scene)
             case _:
                 self.terminal_output.update_terminal_with(no_comprende)
-
 
     # RUN: GAME LOOP USING EVERYTHING ABOVE ------------------------------------
     def run(self):
@@ -350,7 +420,6 @@ class Game:
         pygame.display.flip()
 
         while self.running:
-
             dt = self.clock.tick(60) / 1000
 
             for event in pygame.event.get():
@@ -397,6 +466,7 @@ class Game:
             self.dirty = False
 
         pygame.quit()
+
 
 if __name__ == "__main__":
     game = Game()
