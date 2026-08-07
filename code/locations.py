@@ -334,7 +334,7 @@ location_100.interactions = {
 }
 
 location_100.items = {
-    "rocking horse": "Small motes float about the rocking horse, as if it's illuminated by a light source you can't see. It's made of dark wood and has yellow, woven hair. Two handles stick out from the side of its head."
+    "rocking horse": "Small motes float about the rocking horse, as if it's illuminated by a light source you can't see. It's made of dark wood and has yellow, woven hair. There is a rough 'N' carved into its left hip and small slip of brown paper stapled to its neck. It reads, 'Some part of you is still here.'"
 }
 
 # location_XX.description_new = ("")

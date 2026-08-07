@@ -37,7 +37,7 @@ def rearrange_room(item, room_detail, main_character):
         location_100: {
             "compartment": "The weight of papers and books that held the desk closed have been blown away by the exploding brick. Inside, you see a toy ROCKING HORSE.",
             "desk": "The desk appears undamaged by the explosion. In fact, you notice there's no debris anywhere in the room. It now sits open, its contents exposed for you to see.",
-            "brain": "You hit the bullseye when you threw the brick at the brain. There is a large crack and a smudge of red dust on the board where the brick landed, but the brick itself seems to have disappeared."
+            "brain": "You hit the bullseye when you threw the brick at the brain. There is a large crack and a smudge of red dust on the board where the brick landed, but the brick itself has vanished."
             }
     }
 
@@ -47,7 +47,8 @@ def rearrange_room(item, room_detail, main_character):
     }
 
     modify_links = {
-            "yellow note"
+            "yellow note",
+            "brick"
         }
 
     if item in interaction_table:

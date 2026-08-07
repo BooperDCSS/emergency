@@ -18,6 +18,7 @@ from terminal_output import Terminal_Output
 from actor import Main_Character
 from inventory import Inventory
 from special_interactions import unwrap_items, rearrange_room
+from the_end import end_game
 
 
 class Game:
@@ -29,6 +30,7 @@ class Game:
 
         self.clock = pygame.time.Clock()
         self.running = True
+        self.endgame = False
 
         self.player_char = pygame.font.Font(
             ROOT_DIR.joinpath("images", "Oxanium-Bold.ttf")
@@ -96,18 +98,31 @@ class Game:
 
     def location_change(self, direction):
 
+        your_inventory = self.main_character.inventory
         location_name = self.main_character.location.name
         room_links = self.main_character.location.links
         links_alt = self.main_character.location.links_alt
         illegal_move = "There is no clear or safe path in that direction."
 
         if direction in room_links:  # .keys() not required, that is default behavior
-            self.player_grid.move_player_icon(direction)
-            if location_name == "the fields" and self.main_character.dot:
+            if (
+                location_name == "the beginning"
+                and "cannister" not in your_inventory
+                and (direction == "e" or direction == "east")
+            ):
+                self.terminal_output.update_terminal_with(
+                    "A doubt enters your mind. It's as if something is missing..."
+                )
+                return
+            elif location_name == "the fields" and self.main_character.dot:
                 self.main_character.move_character(links_alt[direction])
+            elif location_name == "censor" and (direction == "n" or direction == "north"):
+                self.endgame = True
+                return
             else:
                 self.main_character.move_character(room_links[direction])
 
+            self.player_grid.move_player_icon(direction)
             self.grid_sprites.update()
 
             if not self.main_character.location.visited:
@@ -147,7 +162,7 @@ class Game:
             )
         else:
             self.terminal_output.update_terminal_with(
-            f"You can't get something that isn't there... can you?"
+                f"You can't get something that isn't there... can you?"
             )
 
         self.inventory.rewrite()
@@ -161,10 +176,7 @@ class Game:
 
         common_prepositions = {"with", "on", "in", "at"}
         common_articles = {"the", "a", "an"}
-        compound_items = {
-            "yellow": "note",
-            "rocking": "horse"
-        }
+        compound_items = {"yellow": "note", "rocking": "horse"}
 
         for item in compound_items:
             for i in range(len(action_words) - 1):
@@ -227,7 +239,8 @@ class Game:
                         )
                 else:
                     self.terminal_output.update_terminal_with(
-                    f"You can't {verb} the {item} {word1} the {word2}.")
+                        f"You can't {verb} the {item} {word1} the {word2}."
+                    )
 
             # fourth variation: "use the key door", which will work, or a miskey
             # like "use the key on"
@@ -432,6 +445,10 @@ class Game:
                 self.action_text, changed = self.input.handle_input(event)
 
             self.parse_action(dt)
+
+            if self.endgame == True:
+                self.running = False
+                end_game(dt, self.font)
 
             if changed:
                 self.dirty = True
