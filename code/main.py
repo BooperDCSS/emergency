@@ -144,7 +144,7 @@ class Game:
 
         filter_words = {"the", "at"}
 
-        for i in range(len(words) - 1):
+        for i in range(len(words)):
             if words[i] in filter_words:
                 words[i] = ""
 
@@ -179,7 +179,7 @@ class Game:
         compound_items = {"yellow": "note", "rocking": "horse"}
 
         for item in compound_items:
-            for i in range(len(action_words) - 1):
+            for i in range(len(action_words)):
                 if action_words[i] in compound_items:
                     action_words.remove(compound_items[item])
                     action_words[i] = item + " " + compound_items[item]
@@ -274,7 +274,7 @@ class Game:
                 and item in your_inventory
                 and prep in common_prepositions
             ):
-                for i in range(len(rest) - 1):
+                for i in range(len(rest)):
                     if rest[i] in common_prepositions or rest[i] in common_articles:
                         rest[i] = ""
 
@@ -309,7 +309,7 @@ class Game:
                 and prep in common_prepositions
                 and article in common_articles
             ):
-                for i in range(len(rest) - 1):
+                for i in range(len(rest)):
                     if rest[i] in common_prepositions or rest[i] in common_articles:
                         rest[i] = ""
 
@@ -345,7 +345,7 @@ class Game:
 
         filter_words = {"the", "at"}
 
-        for i in range(len(words) - 1):
+        for i in range(len(words)):
             if words[i] in filter_words:
                 words[i] = ""
 
@@ -446,9 +446,9 @@ class Game:
 
             self.parse_action(dt)
 
-            if self.endgame == True:
-                self.running = False
-                end_game(dt, self.font)
+            # if self.endgame == True:
+            #     self.running = False
+            #     end_game(dt, self.font, self.inv_font)
 
             if changed:
                 self.dirty = True
